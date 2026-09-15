@@ -346,6 +346,15 @@ main {
   padding: 24px 0 14px;
   margin-top: 28px;
 }
+.upcoming-action {
+  margin-top: 24px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+.upcoming-action > p:not(.eyebrow) {
+  line-height: 1.8;
+  margin-bottom: 18px;
+}
 .lesson-nav button {
   border: 0;
   background: none;

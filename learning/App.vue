@@ -1,6 +1,8 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
 import { chapters, position, route } from "./chapters.mjs";
+import { initialState, following, act } from './interaction.mjs';
+const steps = ref([]);
 const locationState = ref(position(location.hash)),
   revealed = ref(false),
   choice = ref(-1),
@@ -22,12 +24,9 @@ const feedback = computed(() =>
     ? current.value.choices[choice.value].feedback
     : current.value.explanation,
 );
-const lastPage = computed(
-  () => locationState.value.page === chapter.value.pages.length - 1,
-);
-const finalPage = computed(
-  () => lastPage.value && locationState.value.chapter === chapters.length - 1,
-);
+const snapshot = () => ({ ...initialState(locationState.value.chapter, locationState.value.page), revealed: revealed.value, choice: choice.value });
+const upcoming = computed(() => following(snapshot()));
+const upcomingScene = computed(() => upcoming.value && chapters[upcoming.value.chapter].pages[upcoming.value.page]);
 function remember() {
   if (!locationState.value.map) {
     last.value = route(locationState.value.chapter, locationState.value.page);
@@ -39,6 +38,7 @@ function remember() {
   }
 }
 async function sync() {
+  steps.value = [];
   locationState.value = position(location.hash);
   revealed.value = false;
   choice.value = -1;
@@ -47,40 +47,28 @@ async function sync() {
   heading.value?.focus({ preventScroll: true });
   window.scrollTo({ top: 0, behavior: "instant" });
 }
-function replay() {
-  revealed.value = false;
-  choice.value = -1;
-}
-function next() {
-  const s = locationState.value;
-  if (finalPage.value) location.hash = "#/map";
-  else
-    location.hash = lastPage.value
-      ? route(s.chapter + 1)
-      : route(s.chapter, s.page + 1);
-}
-function previous() {
-  const s = locationState.value;
-  if (s.page > 0) location.hash = route(s.chapter, s.page - 1);
-  else if (s.chapter > 0)
-    location.hash = route(
-      s.chapter - 1,
-      chapters[s.chapter - 1].pages.length - 1,
-    );
-}
-function keys(event) {
-  if (
-    event.target.closest("button,a,input,select,textarea,summary") ||
-    locationState.value.map
-  )
-    return;
-  if (event.key === "ArrowRight") {
-    event.preventDefault();
-    next();
-  } else if (event.key === "ArrowLeft") {
-    event.preventDefault();
-    previous();
+async function restore(state) {
+  const changedScene = state.chapter !== locationState.value.chapter || state.page !== locationState.value.page;
+  locationState.value = { chapter: state.chapter, page: state.page, map: false };
+  revealed.value = state.revealed;
+  choice.value = state.choice;
+  history.replaceState(null, '', route(state.chapter, state.page));
+  remember();
+  await nextTick();
+  if (changedScene) {
+    heading.value?.focus({ preventScroll: true });
+    window.scrollTo({ top: 0, behavior: 'instant' });
   }
+}
+function perform(selected = -1, advance = false) {
+  const before = snapshot();
+  const after = act(before, selected, advance);
+  if (JSON.stringify(before) === JSON.stringify(after)) return;
+  steps.value.push(before);
+  restore(after);
+}
+function undo() {
+  if (steps.value.length) restore(steps.value.pop());
 }
 onMounted(() => {
   try {
@@ -91,11 +79,9 @@ onMounted(() => {
   }
   remember();
   window.addEventListener("hashchange", sync);
-  window.addEventListener("keydown", keys);
 });
 onUnmounted(() => {
   window.removeEventListener("hashchange", sync);
-  window.removeEventListener("keydown", keys);
 });
 </script>
 <template>
@@ -126,7 +112,7 @@ onUnmounted(() => {
             ><a v-if="last" class="text-link" :href="last">繼續上次的位置 →</a>
           </div>
           <p class="quiet">
-            每頁一個問題 · 可以操作、比較與重播 · 所有章節自由閱讀
+            用動作推進情境 · 可回到上一步比較結果 · 所有章節自由探索
           </p>
         </section>
         <section class="chapter-map" aria-label="章節地圖">
@@ -157,7 +143,7 @@ onUnmounted(() => {
           <span
             >第 {{ locationState.chapter + 1 }} 章 / {{ chapter.title }}</span
           ><span
-            >{{ locationState.page + 1 }} / {{ chapter.pages.length }}</span
+            >情境 {{ locationState.page + 1 }} / {{ chapter.pages.length }}</span
           >
         </div>
         <article class="lesson" :key="chapter.id + '-' + locationState.page">
@@ -218,7 +204,7 @@ onUnmounted(() => {
                   v-for="(option, i) in current.choices"
                   :key="option.label"
                   :aria-pressed="choice === i"
-                  @click="choice = i"
+                  @click="perform(i)"
                 >
                   {{ option.label }} <span>→</span>
                 </button>
@@ -226,10 +212,10 @@ onUnmounted(() => {
             ><button
               v-else-if="!interacted"
               class="primary"
-              @click="revealed = true"
+              @click="perform()"
             >
               {{ current.action }} <span>→</span></button
-            ><button v-else class="replay" @click="replay">↺ 重播這段</button>
+            >
             <div v-if="interacted" class="explanation" role="status">
               <span class="explanation-label">剛才發生了什麼？</span>
               <p>{{ feedback }}</p>
@@ -242,28 +228,28 @@ onUnmounted(() => {
                   : "按上方按鈕，看圖中的資訊如何改變。"
               }}
             </p>
+            <div v-if="interacted && upcomingScene" class="upcoming-action">
+              <p class="eyebrow">{{ upcoming.chapter !== locationState.chapter ? chapters[upcoming.chapter].title : '接著要處理的事' }}</p>
+              <p>{{ upcomingScene.intro }}</p>
+              <div v-if="upcomingScene.choices" class="choices">
+                <button v-for="(option, i) in upcomingScene.choices" :key="option.label" @click="perform(i, true)">
+                  {{ option.label }} <span>→</span>
+                </button>
+              </div>
+              <button v-else class="primary" @click="perform(-1, true)">{{ upcomingScene.action }} <span>→</span></button>
+            </div>
+            <a v-else-if="interacted" href="#/map" class="primary">完成探索，回到章節地圖 →</a>
           </section>
         </article>
-        <nav class="lesson-nav" aria-label="閱讀導航">
+        <nav class="lesson-nav" aria-label="互動控制">
           <button
-            :disabled="locationState.chapter === 0 && locationState.page === 0"
-            @click="previous"
+            :disabled="steps.length === 0"
+            @click="undo"
           >
-            ← 上一頁</button
-          ><button class="nav-replay" @click="replay">重看這頁</button
-          ><button class="next" @click="next">
-            {{
-              finalPage
-                ? "回到章節地圖"
-                : lastPage
-                  ? "下一章：" + chapters[locationState.chapter + 1].title
-                  : "下一頁"
-            }}
-            →
-          </button>
+            ← 回到上一步</button>
         </nav>
         <p class="reading-note">
-          可直接翻頁，不必完成操作。閱讀位置會保留，這不代表已掌握章節內容。
+          動作按鈕會直接改變情境；回到上一步可還原剛才的操作與選擇。也可隨時從章節地圖切換主題。
         </p>
       </template>
       <p v-if="storageUnavailable" class="quiet" role="status">
