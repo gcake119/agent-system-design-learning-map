@@ -5,13 +5,18 @@
   "type": "module",
   "scripts": {
     "test": "node --test tests/*.test.mjs",
-    "dev": "slidev --open",
-    "build": "slidev build --base /agent-system-design-learning-map/ && node scripts/pages-fallback.mjs",
+    "dev": "vite --config vite.learning.config.mjs",
+    "dev:slides": "slidev --open",
+    "build": "vite build --config vite.learning.config.mjs && slidev build --base /agent-system-design-learning-map/slides/ --out dist/slides && node scripts/pages-fallback.mjs",
     "export": "slidev export"
   },
   "dependencies": {
     "@slidev/cli": "^52.19.2",
     "@slidev/theme-default": "latest",
     "vue": "^3.5.21"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "6.0.5",
+    "vite": "8.2.2"
   }
 }
