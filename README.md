@@ -1,59 +1,32 @@
 # Agent System Design 互動式學習地圖
 
-Vue 互動學習介面 + Slidev 簡報，共用章節資料與紙白／低彩度視覺。首頁提供獨立探索地圖；本輪完成 Agent Loop 的「設定 → 執行 → 回饋 → 回到地圖」情境。其他章節目前只有簡報預覽，不宣稱已具備完整互動課程。
+一套 Vue 互動教材，地圖只負責章節導航，不另設純簡報模式。
 
-- `/`、`/#/map`：探索地圖
-- `/#/loop`：Agent Loop 情境實驗
-- `/slides/`：原有 21 張簡報
+七個章節、36 個教學頁面：Agent Loop、Context Management、Reliability / Guardrails、Observability、Evaluation、Cost / Latency、Multi-Agent。Tool Calling、State、Retrieval / RAG 納入對應章節。
 
-## 本機執行
+每頁包含：具體問題 → 情境圖解 → 一個主要操作或兩個可比較選項 → 結果與白話說明。術語在體驗後介紹。全部章節自由閱讀，不計分、不解鎖、不使用控制台式參數設定。
 
-使用 Node.js 22 與 pnpm 11.19.0（版本固定於 `packageManager`）。
+## 開發與部署
 
-```bash
+使用 Node.js 22、pnpm 11.19.0。
+
+```sh
 corepack enable
 pnpm install --frozen-lockfile
 pnpm dev
-```
-
-`pnpm dev` 啟動學習介面；`pnpm dev:slides` 獨立啟動 Slidev。跨模式連結以正式部署路徑為準，本機整合檢查請使用建置結果。
-
-## 建置
-
-```bash
 pnpm test
 pnpm build
 ```
 
-輸出位於 `dist/`。推送到 `main` 後，GitHub Actions 會自動建置並部署 GitHub Pages。
+`main` 經 GitHub Actions 部署 `dist/` 至 GitHub Pages，Pages Source 必須為 GitHub Actions。
 
-建置會產生 `404.html`，讓 GitHub Pages 的章節網址重新整理時仍能載入簡報。
+## 結構
 
-## 驗收
+- `learning/chapters.mjs`：共用章節、場景、操作與回饋資料。
+- `learning/App.vue`：地圖、教學頁、重播、前後頁及閱讀位置。
+- `learning/style.css`：紙白底、低彩度、響應式圖解。
+- `tests/chapters.test.mjs`：內容契約、書籤與單一模式驗證。
 
-`pnpm test` 檢查情境執行引擎、96 組條件的有限終止、學習完成判定、既有 Context／Profiler 與簡報導航。詳細流程見 `docs/interactive-pilot.md`。測試與建置通過不等於產品體驗驗收。
+首頁為地圖；`#/learn/loop/1` 等 hash 網址可直接分享。閱讀位置使用 `agent-reading-position-v2` 保存，不沿用舊版評分／解鎖紀錄。刷新會重設本頁操作，保留閱讀位置。資料全部為教學假設，不連接真實 API。
 
-互動介面的「情境已通過」需安全完成或交接，並答對結果理解題；只表示這個練習通過，不代表掌握整章。舊簡報的「已瀏覽」獨立計算，不會轉成完成紀錄。進度僅保存於此瀏覽器 localStorage。所有案件、回應、費用與延遲皆為教學假設，不連接真實 API。
-
-## 內容架構
-
-- `learning/`：Vue 學習介面與可測試的情境執行引擎
-- `vite.learning.config.mjs`：學習網站建置
-- `data/topics.mjs`：雙模式共用章節資料
-- `slides.md`：簡報主線與每頁文案
-- `components/`：互動式教學元件
-- `style.css`：整套視覺系統
-- `.github/workflows/deploy.yml`：GitHub Pages 部署
-
-## 互動元件
-
-- Agent Loop 模擬器
-- Context Window 模擬器
-- Reliability 故障實驗室
-- Agent Trace Viewer
-- Evaluation 分類題
-- Cost / Latency Profiler
-
-## GitHub Pages 設定
-
-第一次部署前，請在 repository 的 **Settings → Pages → Build and deployment** 將 Source 設成 **GitHub Actions**。
+舊版 Slidev 與實驗控制台原始檔暫留作歷史參考，但不再建置或公開提供入口；新版以本文件及 `docs/guided-learning.md` 為準。
