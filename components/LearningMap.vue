@@ -1,20 +1,24 @@
 <script setup lang="ts">
+import { useNav } from '@slidev/client'
+import { topics } from '../data/topics.mjs'
+import { useProgress } from '../composables/progress'
 defineProps<{ active?: string }>()
-const topics = [
-  ['context', 'Context', '每一步要看什麼'],
-  ['reliability', 'Reliability', '失敗時怎麼辦'],
-  ['observability', 'Observability', '如何看見過程'],
-  ['evaluation', 'Evaluation', '怎麼證明做對'],
-  ['optimization', 'Optimization', '如何更快更省'],
-  ['multi', 'Multi-Agent', '何時需要分工'],
-]
+const { go } = useNav()
+const { viewed, unlocked } = useProgress()
 </script>
-
 <template>
-  <div class="learning-map" :class="`active-${active}`">
-    <div class="loop-core"><small>Observe · Reason · Act</small><strong>Agent Loop</strong><span>任務如何持續執行</span></div>
-    <div v-for="(topic, i) in topics" :key="topic[0]" class="map-topic" :class="[`topic-${i}`, { locked: topic[0] === 'multi' }]">
-      <b>{{ topic[1] }}</b><small>{{ topic[2] }}</small><i v-if="topic[0] === 'multi'">LOCKED</i>
-    </div>
+  <div class="learning-map" @keydown.stop>
+    <svg class="map-connectors" viewBox="0 0 888 330" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M350 100 L275 45 M538 100 L613 45 M554 165 H703 M538 235 L613 290 M350 235 L275 290 M334 165 H185" />
+    </svg>
+    <button class="loop-core" @click="go(3)" aria-label="Agent Loop：前往章節">
+      <small>Observe / Reason / Act</small><strong>Agent Loop</strong><span>任務如何持續執行</span>
+    </button>
+    <button v-for="(topic, i) in topics.slice(1)" :key="topic.id" class="map-topic" :class="'topic-' + i"
+      :disabled="topic.id === 'multi' && !unlocked" :aria-label="topic.title + '：' + (topic.id === 'multi' && !unlocked ? '需先瀏覽五個基礎章節' : '前往章節')" @click="go(topic.slide)">
+      <b>{{ topic.title }}</b><small>{{ topic.detail }}</small>
+      <i>{{ topic.id === 'multi' && !unlocked ? '先瀏覽五個基礎章節' : viewed.includes(topic.id) ? '已瀏覽 ✓' : '進入章節' }}</i>
+    </button>
+    <p class="map-help">點選主題自由探索。「已瀏覽」僅記錄閱讀進度，不代表通過評量。</p>
   </div>
 </template>

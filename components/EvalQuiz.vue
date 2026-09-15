@@ -12,9 +12,9 @@ function next(){ index.value=(index.value+1)%questions.length; choice.value=null
 </script>
 
 <template>
-  <div class="eval-quiz">
+  <div class="eval-quiz" @keydown.stop>
     <div class="quiz-count">0{{ index+1 }} / 03</div><h3>{{ current.q }}</h3>
     <div class="quiz-options"><button :class="{ selected: choice==='rule' }" @click="choice='rule'">Deterministic validator</button><button :class="{ selected: choice==='judge' }" @click="choice='judge'">Model judge / Human</button></div>
-    <div v-if="choice" :class="['quiz-feedback', { correct: choice===current.answer }]"><strong>{{ choice===current.answer ? '判斷正確' : '再想一下' }}</strong><span>{{ current.why }}</span><button @click="next">下一題</button></div>
+    <div v-if="choice" aria-live="polite" :class="['quiz-feedback', { correct: choice===current.answer }]"><strong>{{ choice===current.answer ? '判斷正確' : '再想一下' }}</strong><span>{{ current.why }}</span><button @click="next">{{ index === 2 ? '重新練習' : '下一題' }}</button></div>
   </div>
 </template>

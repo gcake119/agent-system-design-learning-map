@@ -9,10 +9,10 @@ const result: Record<string, { tone: string; title: string; body: string }> = {
 </script>
 
 <template>
-  <div class="failure-lab">
+  <div class="failure-lab" @keydown.stop>
     <div class="failure-flow"><div>Agent</div><i></i><div>建立訂單</div><i></i><div class="timeout">TIMEOUT</div><i class="dashed"></i><div class="unknown">結果不明</div></div>
     <div class="decision-row"><button :class="{ selected: choice === 'retry' }" @click="choice='retry'">直接重試</button><button :class="{ selected: choice === 'check' }" @click="choice='check'">查詢訂單狀態</button><button :class="{ selected: choice === 'human' }" @click="choice='human'">轉交人工</button></div>
-    <div v-if="choice" :class="['decision-result', result[choice].tone]"><strong>{{ result[choice].title }}</strong><span>{{ result[choice].body }}</span></div>
+    <div v-if="choice" aria-live="polite" :class="['decision-result', result[choice].tone]"><strong>{{ result[choice].title }}</strong><span>{{ result[choice].body }}</span></div>
     <div v-else class="decision-result placeholder"><strong>下一步怎麼處理？</strong><span>選一個方案，查看系統風險。</span></div>
   </div>
 </template>

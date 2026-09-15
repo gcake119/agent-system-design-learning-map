@@ -1,5 +1,8 @@
 ---
 theme: default
+layout: default
+colorSchema: light
+aspectRatio: 16/9
 title: Agent System Design 互動式學習地圖
 info: 從 Agent Loop 到可靠性、可觀測性與評估
 transition: fade-out
@@ -15,7 +18,7 @@ fonts:
   <p class="eyebrow">AGENT SYSTEM DESIGN</p>
   <h1>從一次回答<br>到一個會持續行動的系統</h1>
   <p class="lede">互動式學習地圖</p>
-  <div class="cover-start">按方向鍵開始</div>
+  <div class="cover-start">按方向鍵開始，或使用下方導覽</div>
 </div>
 
 ---
@@ -197,7 +200,7 @@ layout: default
   <div><strong>14.2s</strong><span>latency</span></div>
   <div><strong>$0.41</strong><span>cost</span></div>
 </div>
-<p class="center-note">常見調整點：移除無關 context、合併工具查詢、規則取代模型、選擇合適模型。</p>
+<p class="center-note">以上為教學假設，非實測或模型報價。可調整 context、工具查詢與模型選擇。</p>
 
 ---
 layout: default
