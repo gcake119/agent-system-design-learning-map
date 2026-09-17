@@ -200,6 +200,7 @@ onUnmounted(() => {
                 {{ current.action }}，看看不同做法的結果。可隨時換選項比較。
               </p>
               <div class="choices">
+                <button v-if="!interacted" class="primary" :disabled="steps.length === 0" @click="undo">← 回到上一步</button>
                 <button
                   v-for="(option, i) in current.choices"
                   :key="option.label"
@@ -209,13 +210,14 @@ onUnmounted(() => {
                   {{ option.label }} <span>→</span>
                 </button>
               </div></template
-            ><button
-              v-else-if="!interacted"
+            ><div v-else-if="!interacted" class="action-row">
+            <button class="primary" :disabled="steps.length === 0" @click="undo">← 回到上一步</button>
+            <button
               class="primary"
               @click="perform()"
             >
               {{ current.action }} <span>→</span></button
-            >
+            ></div>
             <div v-if="interacted" class="explanation" role="status">
               <span class="explanation-label">剛才發生了什麼？</span>
               <p>{{ feedback }}</p>
@@ -231,23 +233,22 @@ onUnmounted(() => {
             <div v-if="interacted && upcomingScene" class="upcoming-action">
               <p class="eyebrow">{{ upcoming.chapter !== locationState.chapter ? chapters[upcoming.chapter].title : '接著要處理的事' }}</p>
               <p>{{ upcomingScene.intro }}</p>
+              <div class="action-row">
+              <button class="primary" :disabled="steps.length === 0" @click="undo">← 回到上一步</button>
               <div v-if="upcomingScene.choices" class="choices">
-                <button v-for="(option, i) in upcomingScene.choices" :key="option.label" @click="perform(i, true)">
+                <button class="primary" v-for="(option, i) in upcomingScene.choices" :key="option.label" @click="perform(i, true)">
                   {{ option.label }} <span>→</span>
                 </button>
               </div>
               <button v-else class="primary" @click="perform(-1, true)">{{ upcomingScene.action }} <span>→</span></button>
+              </div>
             </div>
-            <a v-else-if="interacted" href="#/map" class="primary">完成探索，回到章節地圖 →</a>
+            <div v-else-if="interacted" class="action-row">
+              <button class="primary" :disabled="steps.length === 0" @click="undo">← 回到上一步</button>
+              <a href="#/map" class="primary">完成探索，回到章節地圖 →</a>
+            </div>
           </section>
         </article>
-        <nav class="lesson-nav" aria-label="互動控制">
-          <button
-            :disabled="steps.length === 0"
-            @click="undo"
-          >
-            ← 回到上一步</button>
-        </nav>
         <p class="reading-note">
           動作按鈕會直接改變情境；回到上一步可還原剛才的操作與選擇。也可隨時從章節地圖切換主題。
         </p>

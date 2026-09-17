@@ -297,7 +297,7 @@ main {
   flex-wrap: wrap;
   gap: 15px;
 }
-.choices button {
+.choices button:not(.primary) {
   display: flex;
   justify-content: space-between;
   gap: 24px;
@@ -310,6 +310,15 @@ main {
 .choices button[aria-pressed="true"] {
   background: var(--green);
   color: white;
+}
+.action-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 15px;
+}
+.explanation + .action-row {
+  margin-top: 24px;
 }
 .explanation {
   margin-top: 22px;
@@ -466,7 +475,7 @@ footer {
   .explanation p {
     font-size: 16px;
   }
-  .choices button {
+  .choices button:not(.primary) {
     font-size: 14px;
   }
   .primary {
