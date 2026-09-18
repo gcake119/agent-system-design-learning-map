@@ -7,6 +7,7 @@ export const tracks = [
 ];
 
 // Each statement is both a small-section learning objective and its opening claim.
+import { extendChapter } from './deep-content.mjs';
 const concepts = {
   loop: [
     '能區分收到任務與取得回答所需的資料。',
@@ -98,6 +99,6 @@ export function buildCurriculum(bank) {
       { label:a, cards:ac, feedback:explanation+' 這個做法遺漏了需要檢查的條件。' },
       { label:b, cards:bc, feedback:explanation },
     ] });
-    return { id, title, conclusion, objectives, number:index, group:tracks.find(t=>t.ids.includes(id)).name, question:title, description:conclusion, pages };
+    return extendChapter({ id, title, conclusion, objectives, number:index, group:tracks.find(t=>t.ids.includes(id)).name, question:title, description:conclusion, pages });
   });
 }

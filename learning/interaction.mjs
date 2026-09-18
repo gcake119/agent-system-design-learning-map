@@ -1,7 +1,7 @@
 import { chapters } from './chapters.mjs';
 
 export function initialState(chapter = 0, page = 0) {
-  return { chapter, page, revealed: false, choice: -1 };
+  return { chapter, page, revealed: false, choice: -1, variant: 0 };
 }
 
 export function following(state) {

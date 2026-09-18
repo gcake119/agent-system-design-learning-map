@@ -3,6 +3,10 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
 import { chapters, position, route } from "./chapters.mjs";
 import { thesis, tracks } from './curriculum.mjs';
 import { initialState, following, act } from './interaction.mjs';
+import ComparisonLab from './ComparisonLab.vue';
+import DesignNotebook from './DesignNotebook.vue';
+const variant = ref(0);
+const designMode = ref(location.hash === '#/design');
 const steps = ref([]);
 const locationState = ref(position(location.hash)),
   revealed = ref(false),
@@ -11,7 +15,10 @@ const locationState = ref(position(location.hash)),
 const last = ref(null),
   storageUnavailable = ref(false);
 const chapter = computed(() => chapters[locationState.value.chapter]);
-const current = computed(() => chapter.value.pages[locationState.value.page]);
+const current = computed(() => {
+  const scene = chapter.value.pages[locationState.value.page];
+  return variant.value && scene.variants?.[variant.value] ? { ...scene, ...scene.variants[variant.value] } : scene;
+});
 const interacted = computed(() => revealed.value || choice.value >= 0);
 const cards = computed(() =>
   choice.value >= 0
@@ -25,7 +32,7 @@ const feedback = computed(() =>
     ? current.value.choices[choice.value].feedback
     : current.value.explanation,
 );
-const snapshot = () => ({ ...initialState(locationState.value.chapter, locationState.value.page), revealed: revealed.value, choice: choice.value });
+const snapshot = () => ({ ...initialState(locationState.value.chapter, locationState.value.page), revealed: revealed.value, choice: choice.value, variant:variant.value });
 const upcoming = computed(() => following(snapshot()));
 const upcomingScene = computed(() => upcoming.value && chapters[upcoming.value.chapter].pages[upcoming.value.page]);
 function remember() {
@@ -39,6 +46,8 @@ function remember() {
   }
 }
 async function sync() {
+  designMode.value = location.hash === '#/design';
+  variant.value = 0;
   steps.value = [];
   locationState.value = position(location.hash);
   revealed.value = false;
@@ -53,6 +62,7 @@ async function restore(state) {
   locationState.value = { chapter: state.chapter, page: state.page, map: false };
   revealed.value = state.revealed;
   choice.value = state.choice;
+  variant.value = state.variant || 0;
   history.replaceState(null, '', route(state.chapter, state.page));
   remember();
   await nextTick();
@@ -70,6 +80,16 @@ function perform(selected = -1, advance = false) {
 }
 function undo() {
   if (steps.value.length) restore(steps.value.pop());
+}
+function changeVariant(value) {
+  if (variant.value === value) return;
+  steps.value.push(snapshot());
+  restore({ ...snapshot(), variant:value, choice:-1, revealed:false });
+}
+function openUpcoming() {
+  if (!upcoming.value) return;
+  steps.value.push(snapshot());
+  restore(upcoming.value);
 }
 onMounted(() => {
   try {
@@ -99,7 +119,8 @@ onUnmounted(() => {
       >
     </header>
     <main>
-      <template v-if="locationState.map">
+      <template v-if="designMode"><DesignNotebook /></template>
+      <template v-else-if="locationState.map">
         <section class="welcome">
           <p class="eyebrow">互動式學習地圖</p>
           <h1 ref="heading" tabindex="-1">
@@ -111,6 +132,7 @@ onUnmounted(() => {
           <div class="welcome-actions">
             <a class="primary" :href="route(0)">從完整系統開始 <span>→</span></a
             ><a v-if="last" class="text-link" :href="last">繼續上次的位置 →</a>
+            <a class="text-link" href="#/design">我的系統設計 →</a>
           </div>
           <p class="quiet">
             用動作推進情境 · 可回到上一步比較結果 · 所有章節自由探索
@@ -130,10 +152,11 @@ onUnmounted(() => {
               String(item.number).padStart(2, "0")
             }}</span>
             <div>
-              <p class="chapter-name">{{ item.title }}</p>
+              <p class="chapter-name">原則 → 機制 → 比較 → 邊界 → 設計</p>
               <h2>{{ item.question }}</h2>
               <p>{{ item.description }}</p>
               <small>學習目標：{{ item.objectives[0] }}</small>
+              <small>設計成果：{{ item.design.title }}</small>
             </div>
             <span class="chapter-arrow" aria-hidden="true">→</span></a
           >
@@ -157,20 +180,23 @@ onUnmounted(() => {
           <details :open="locationState.page === 0">
             <summary>這個單元你會學會</summary>
             <ul><li v-for="goal in chapter.objectives" :key="goal">{{ goal }}</li></ul>
+            <p>深入目標：比較方案與適用邊界，完成「{{ chapter.design.title }}」，說明理由、代價與重新評估條件。</p>
           </details>
+          <nav class="welcome-actions" aria-label="單元探索"><a class="text-link" :href="route(chapter.number, chapter.pages.findIndex(p => p.deep))">直接比較設計方案 →</a><a class="text-link" :href="route(chapter.number, chapter.pages.length - 1)">制定{{ chapter.design.title }} →</a></nav>
         </section>
         <article class="lesson" :key="chapter.id + '-' + locationState.page">
           <header class="lesson-title">
             <p class="eyebrow">
               {{
-                current.review ? '單元應用 · 先說出理由，再比較結果' : '透過操作理解原則'
+                current.depth || (current.review ? '單元應用 · 先說出理由，再比較結果' : '透過操作理解原則')
               }}
             </p>
             <h1 ref="heading" tabindex="-1">{{ current.title }}</h1>
             <p class="section-objective"><strong>這一節要學會：</strong>{{ current.objective }}</p>
             <p class="lead">{{ current.intro }}</p>
           </header>
-          <section
+          <ComparisonLab v-if="current.deep" :key="chapter.id + '-' + current.id" :scene="current" :choice="choice" :variant="variant" @variant="changeVariant" />
+          <section v-else
             class="story-stage"
             :class="{ changed: interacted }"
             aria-label="情境圖解"
@@ -243,6 +269,7 @@ onUnmounted(() => {
                   : "按上方按鈕，看圖中的資訊如何改變。"
               }}
             </p>
+            <DesignNotebook v-if="current.design" :key="chapter.id" :unit="chapter.id" :approach="choice >= 0 ? current.choices[choice].label : ''" />
             <div v-if="interacted && upcomingScene" class="upcoming-action">
               <p class="eyebrow">{{ upcoming.chapter !== locationState.chapter ? chapters[upcoming.chapter].title : '接著要處理的事' }}</p>
               <template v-if="upcoming.chapter !== locationState.chapter">
@@ -254,7 +281,8 @@ onUnmounted(() => {
               <p>{{ upcomingScene.intro }}</p>
               <div class="action-row">
               <button class="primary" :disabled="steps.length === 0" @click="undo">← 回到上一步</button>
-              <div v-if="upcomingScene.choices" class="choices">
+              <button v-if="upcomingScene.deep || upcomingScene.design" class="primary" @click="openUpcoming">{{ upcomingScene.design ? '制定' + chapters[upcoming.chapter].design.title : '探索：' + upcomingScene.title }} →</button>
+              <div v-else-if="upcomingScene.choices" class="choices">
                 <button class="primary" v-for="(option, i) in upcomingScene.choices" :key="option.label" @click="perform(i, true)">
                   {{ option.label }} <span>→</span>
                 </button>
@@ -264,7 +292,7 @@ onUnmounted(() => {
             </div>
             <div v-else-if="interacted" class="action-row">
               <button class="primary" :disabled="steps.length === 0" @click="undo">← 回到上一步</button>
-              <a href="#/map" class="primary">完成探索，回到章節地圖 →</a>
+              <a href="#/design" class="primary">整合我的案件助手設計 →</a>
             </div>
           </section>
         </article>

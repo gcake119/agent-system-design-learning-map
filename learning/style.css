@@ -317,6 +317,29 @@ main {
   align-items: flex-start;
   gap: 15px;
 }
+.comparison-lab, .notebook { margin: 24px 0; }
+.evidence-panel { padding: 18px; background: #eef1e5; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 20px; }
+.evidence-panel summary, .notebook summary { cursor: pointer; font-weight: 600; }
+.evidence-panel li, .notebook p { line-height: 1.8; }
+.prediction, .notebook label { display: block; font-size: 15px; line-height: 1.8; margin: 16px 0; }
+.prediction textarea, .notebook textarea, .notebook input { display: block; width: 100%; box-sizing: border-box; margin-top: 6px; padding: 12px; border: 1px solid #8ca38a; border-radius: 6px; background: #fffdf6; font: inherit; color: var(--ink); resize: vertical; }
+.condition-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin: 20px 0; }
+.condition-controls button { padding: 10px 16px; background: #fffdf6; border: 1px solid #8ca38a; border-radius: 6px; font: inherit; }
+.condition-controls button[aria-pressed="true"] { background: var(--green); color: white; }
+.trajectory-comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.trajectory-comparison section { border: 1px solid var(--line); border-radius: 8px; padding: 20px; background: #fffdf6; }
+.trajectory-comparison section.selected { border: 2px solid var(--green); padding: 19px; }
+.trajectory-comparison h3 { font-size: 18px; line-height: 1.6; }
+.trajectory-comparison small { display: block; font-size: 12px; color: var(--green); }
+.trajectory-comparison li { line-height: 1.8; margin: 14px 0; animation: reveal-step .35s both; animation-delay: calc(var(--step) * .15s); }
+.trajectory-comparison p { font-size: 14px; line-height: 1.8; }
+.design-entry { margin: 24px 0; padding: 24px; border: 1px solid var(--line); border-radius: 8px; }
+.design-entry h2 { font-size: 22px; }
+.design-reasons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.notebook .action-row { margin-top: 24px; }
+@keyframes reveal-step { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 760px) { .trajectory-comparison, .design-reasons { grid-template-columns: 1fr; } .design-entry { padding: 16px; } .welcome-actions { flex-wrap: wrap; } }
+@media (prefers-reduced-motion: reduce) { .trajectory-comparison li { animation: none; } }
 .track-group { margin-bottom: 30px; grid-column: 1 / -1; }
 .track-group .chapter-card { margin-top: 14px; }
 .track-group > h2 { margin: 0 0 8px; color: var(--green); font-size: 24px; }
