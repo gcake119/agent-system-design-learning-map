@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
 import { chapters, position, route } from "./chapters.mjs";
+import { thesis, tracks } from './curriculum.mjs';
 import { initialState, following, act } from './interaction.mjs';
 const steps = ref([]);
 const locationState = ref(position(location.hash)),
@@ -102,13 +103,13 @@ onUnmounted(() => {
         <section class="welcome">
           <p class="eyebrow">互動式學習地圖</p>
           <h1 ref="heading" tabindex="-1">
-            從一個任務開始，<br />看懂 Agent 怎麼工作。
+            讓 Agent 能完成、<br />能信任，也能持續改善。
           </h1>
           <p class="lead">
-            不用先認識術語。跟著案件助手查一次資料，再逐步理解它如何選擇、行動與處理失敗。
+            {{ thesis }}
           </p>
           <div class="welcome-actions">
-            <a class="primary" :href="route(0)">從第一章開始 <span>→</span></a
+            <a class="primary" :href="route(0)">從完整系統開始 <span>→</span></a
             ><a v-if="last" class="text-link" :href="last">繼續上次的位置 →</a>
           </div>
           <p class="quiet">
@@ -116,46 +117,57 @@ onUnmounted(() => {
           </p>
         </section>
         <section class="chapter-map" aria-label="章節地圖">
-          <div class="map-line" aria-hidden="true"></div>
+          <section v-for="track in tracks" :key="track.name" class="track-group" :aria-label="track.name">
+          <h2>{{ track.name }}</h2>
+          <p>{{ track.question }}</p>
           <a
-            v-for="(item, index) in chapters"
+            v-for="item in chapters.filter(c => track.ids.includes(c.id))"
             :key="item.id"
-            :href="route(index)"
+            :href="route(item.number)"
             class="chapter-card"
-            :class="'chapter-' + index"
+            :class="'chapter-' + item.number"
             ><span class="chapter-number">{{
-              String(index + 1).padStart(2, "0")
+              String(item.number).padStart(2, "0")
             }}</span>
             <div>
               <p class="chapter-name">{{ item.title }}</p>
               <h2>{{ item.question }}</h2>
               <p>{{ item.description }}</p>
+              <small>學習目標：{{ item.objectives[0] }}</small>
             </div>
             <span class="chapter-arrow" aria-hidden="true">→</span></a
           >
+          </section>
         </section>
         <p class="map-caption">
-          學習順序：先理解執行與資訊，再補可靠性、觀測與驗證，最後討論效率與分工。
+          先掌握核心結論，再透過操作理解理由，最後將觀念用於新情境。所有單元自由進入，不計分、不解鎖。
         </p>
       </template>
       <template v-else>
         <div class="chapter-meta">
           <span
-            >第 {{ locationState.chapter + 1 }} 章 / {{ chapter.title }}</span
+            >單元 {{ chapter.number }} / {{ chapter.group }}</span
           ><span
             >情境 {{ locationState.page + 1 }} / {{ chapter.pages.length }}</span
           >
         </div>
+        <section class="unit-principle" :key="chapter.id" aria-label="單元結論與學習目標">
+          <p class="eyebrow">{{ chapter.title }} · 核心結論</p>
+          <p class="unit-conclusion">{{ chapter.conclusion }}</p>
+          <details :open="locationState.page === 0">
+            <summary>這個單元你會學會</summary>
+            <ul><li v-for="goal in chapter.objectives" :key="goal">{{ goal }}</li></ul>
+          </details>
+        </section>
         <article class="lesson" :key="chapter.id + '-' + locationState.page">
           <header class="lesson-title">
             <p class="eyebrow">
               {{
-                locationState.page === 0
-                  ? "從一個問題開始"
-                  : "接著看看會發生什麼"
+                current.review ? '單元應用 · 先說出理由，再比較結果' : '透過操作理解原則'
               }}
             </p>
             <h1 ref="heading" tabindex="-1">{{ current.title }}</h1>
+            <p class="section-objective"><strong>這一節要學會：</strong>{{ current.objective }}</p>
             <p class="lead">{{ current.intro }}</p>
           </header>
           <section
@@ -219,9 +231,10 @@ onUnmounted(() => {
               {{ current.action }} <span>→</span></button
             ></div>
             <div v-if="interacted" class="explanation" role="status">
-              <span class="explanation-label">剛才發生了什麼？</span>
+              <span class="explanation-label">這個結果說明了什麼？</span>
               <p>{{ feedback }}</p>
               <p v-if="current.term" class="term">{{ current.term }}</p>
+              <p v-if="current.review" class="term">自我檢查：能用自己的話說明理由嗎？操作紀錄不代表已掌握觀念。</p>
             </div>
             <p v-else class="quiet">
               {{
@@ -232,6 +245,12 @@ onUnmounted(() => {
             </p>
             <div v-if="interacted && upcomingScene" class="upcoming-action">
               <p class="eyebrow">{{ upcoming.chapter !== locationState.chapter ? chapters[upcoming.chapter].title : '接著要處理的事' }}</p>
+              <template v-if="upcoming.chapter !== locationState.chapter">
+                <p><strong>核心結論：</strong>{{ chapters[upcoming.chapter].conclusion }}</p>
+                <p>這個單元你會學會：</p>
+                <ul><li v-for="goal in chapters[upcoming.chapter].objectives" :key="goal">{{ goal }}</li></ul>
+              </template>
+              <p class="section-objective"><strong>操作目標：</strong>{{ upcomingScene.objective }}</p>
               <p>{{ upcomingScene.intro }}</p>
               <div class="action-row">
               <button class="primary" :disabled="steps.length === 0" @click="undo">← 回到上一步</button>

@@ -7,7 +7,8 @@ import { readFileSync } from 'node:fs';
 test('actions execute all scenes directly and snapshots restore every step', () => {
   let state = initialState();
   const history = [], snapshots = [];
-  for (let i = 0; i < 36; i++) {
+  const total = chapters.reduce((n,c) => n + c.pages.length, 0);
+  for (let i = 0; i < total; i++) {
     const target = i ? following(state) : state;
     const scene = chapters[target.chapter].pages[target.page];
     history.push(state);
@@ -18,7 +19,7 @@ test('actions execute all scenes directly and snapshots restore every step', () 
     assert.ok(state.revealed || state.choice === 0);
   }
   assert.equal(following(state), null);
-  for (let i = 35; i >= 0; i--) {
+  for (let i = total - 1; i >= 0; i--) {
     state = history.pop();
     assert.deepEqual(state, snapshots[i]);
   }

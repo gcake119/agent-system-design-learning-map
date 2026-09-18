@@ -317,6 +317,16 @@ main {
   align-items: flex-start;
   gap: 15px;
 }
+.track-group { margin-bottom: 30px; grid-column: 1 / -1; }
+.track-group .chapter-card { margin-top: 14px; }
+.track-group > h2 { margin: 0 0 8px; color: var(--green); font-size: 24px; }
+.track-group > p { color: var(--muted); margin-bottom: 18px; }
+.chapter-card small { display: block; margin-top: 12px; line-height: 1.7; color: var(--green); }
+.unit-principle { border-left: 3px solid var(--green); background: #edf0e5; padding: 20px 24px; margin: 24px 0; }
+.unit-conclusion { font-size: 20px; line-height: 1.7; margin: 12px 0; }
+.unit-principle summary { cursor: pointer; font-weight: 600; }
+.unit-principle li, .upcoming-action li { line-height: 1.8; margin: 6px 0; }
+.section-objective { font-size: 15px; color: var(--green); line-height: 1.8; margin: 12px 0; }
 .explanation + .action-row {
   margin-top: 24px;
 }

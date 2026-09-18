@@ -2,9 +2,9 @@
 
 一套 Vue 互動教材，地圖只負責章節導航，不另設純簡報模式。
 
-七個章節、36 個教學頁面：Agent Loop、Context Management、Reliability / Guardrails、Observability、Evaluation、Cost / Latency、Multi-Agent。Tool Calling、State、Retrieval / RAG 納入對應章節。
+七個單元、48 個互動情境：完整系統、任務推進、適當資訊、可控失敗、證據驗收、量測改善、分工取捨。以「能完成、能信任、能改善」組織課程，Observability 與 Evaluation 整合為證據驗收。
 
-每頁包含：具體問題 → 情境圖解 → 一個主要操作或兩個可比較選項 → 結果與白話說明。術語在體驗後介紹。全部章節自由閱讀，不計分、不解鎖、不使用控制台式參數設定。
+採金字塔原理：先給單元結論與學習目標，再透過情境操作理解理由。每小節有具體學習目標，每單元以新情境檢查能否運用。全部單元自由閱讀，不計分、不解鎖。
 
 操作按鈕直接執行動作並更新圖解，沒有上一頁／下一頁按鈕或方向鍵翻頁。結果下方呈現接續情境與可執行動作。「回到上一步」依操作歷史還原圖解、回饋與選擇，包括跨情境、跨章及比較選項。切換地圖／直接網址或重新整理會清空這段暫存操作歷史。
 
@@ -24,7 +24,8 @@ pnpm build
 
 ## 結構
 
-- `learning/chapters.mjs`：共用章節、場景、操作與回饋資料。
+- `learning/curriculum.mjs`：課綱、結論、單元與小節目標、應用情境。
+- `learning/chapters.mjs`：案例庫、課程組合與舊書籤相容。
 - `learning/App.vue`：地圖、動作驅動情境、回到上一步及閱讀位置。
 - `learning/interaction.mjs`：動作轉移與可還原的互動狀態。
 - `learning/style.css`：紙白底、低彩度、響應式圖解。

@@ -1,3 +1,4 @@
+import { buildCurriculum } from './curriculum.mjs';
 const page = (
   title,
   intro,
@@ -19,7 +20,7 @@ const page = (
   term,
   choices,
 });
-export const chapters = [
+const lessonBank = [
   {
     id: "loop",
     title: "Agent Loop",
@@ -579,17 +580,20 @@ export const chapters = [
   },
 ];
 // Direction only represents actual information exchange, not comparison cards.
-chapters[0].pages.slice(0,4).forEach((p,i)=>{p.flow=true;p.returning=i===2})
+lessonBank[0].pages.slice(0,4).forEach((p,i)=>{p.flow=true;p.returning=i===2})
+export const chapters = buildCurriculum(lessonBank);
 export function position(hash) {
   const m = /^#\/learn\/([^/]+)\/(\d+)$/.exec(hash);
   if (!m) return { chapter: 0, page: 0, map: true };
-  const chapter = chapters.findIndex((c) => c.id === m[1]);
+  // Preserve old shared links after combining observation and evaluation.
+  const legacyEvidence = m[1] === 'observability' || m[1] === 'evaluation';
+  const chapter = chapters.findIndex((c) => c.id === (legacyEvidence ? 'evidence' : m[1]));
   if (chapter < 0) return { chapter: 0, page: 0, map: true };
   return {
     chapter,
     page: Math.max(
       0,
-      Math.min(chapters[chapter].pages.length - 1, Number(m[2]) - 1),
+      Math.min(chapters[chapter].pages.length - 1, legacyEvidence ? (m[1] === 'observability' ? [1,2,3,4,5] : [0,6,7,8,9])[Math.min(4, Math.max(0,Number(m[2])-1))] : Number(m[2]) - 1),
     ),
     map: false,
   };
