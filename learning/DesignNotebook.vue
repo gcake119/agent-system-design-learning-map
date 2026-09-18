@@ -27,9 +27,10 @@ function download() {
   try { all = parseNotebook(localStorage.getItem(NOTEBOOK_KEY)); } catch {}
   for (const id of ids.value) all[id] = entries.value[id];
   const url = URL.createObjectURL(new Blob([exportNotebook(all)], {type:'text/markdown;charset=utf-8'}));
-  const a = document.createElement('a'); a.href=url; a.download='agent-system-design.md'; a.click();
+  const a = document.createElement('a'); a.href=url; a.download='agent-system-design.md';
+  document.body.appendChild(a); a.click(); a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),1000);
-  status.value = '已下載目前草稿，包含尚未保存的編輯。';
+  status.value = '已發出下載請求，包含尚未保存的編輯；請查看瀏覽器下載項目。';
 }
 </script>
 <template>
