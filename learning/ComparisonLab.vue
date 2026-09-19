@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue';
+import SystemDiagram from './SystemDiagram.vue';
 defineProps({ scene:Object, choice:Number, variant:Number });
 defineEmits(['variant']);
 const prediction = ref('');
@@ -17,7 +18,7 @@ const prediction = ref('');
     <div v-else class="trajectory-comparison">
       <section v-for="(option,i) in scene.choices" :key="variant + '-' + i" :class="{ selected:choice===i }">
         <h3>{{ option.label }} <small v-if="choice===i">目前選擇</small></h3>
-        <ol><li v-for="(step,n) in option.cards" :key="step" :style="{'--step':n}">{{ step }}</li></ol>
+        <SystemDiagram unit="comparison" :labels="['採用依據','執行方式','結果與代價']" :states="option.cards" :focus="2" :animate="choice===i" :title="option.label" />
         <p>{{ option.feedback }}</p>
       </section>
     </div>

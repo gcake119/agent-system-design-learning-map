@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
+import SystemDiagram from './SystemDiagram.vue';
 import { animations, initialAnimation, changeAnimation, timelineRows } from './animations.mjs';
 const props=defineProps({unit:{type:String,required:true}});
 const config=computed(()=>animations[props.unit]);
@@ -24,20 +25,7 @@ function undo(){if(history.value.length){state.value=history.value.pop();playbac
     <p class="quiet">切換條件會從相同起點開始。此區的「回到上一步」還原動畫操作；離開單元會重設實驗。</p>
     <label class="motion-toggle"><input type="checkbox" v-model="motion" />播放動態效果（系統設定為減少動態時會直接顯示結果）</label>
     <div class="animation-stage" :key="playback">
-      <div class="animation-nodes" :style="{'--nodes':config.nodes.length}">
-        <section v-for="(node,i) in config.nodes" :key="node" :class="{'node-active':current?.focus===i}">
-          <span class="node-number" aria-hidden="true">{{ i+1 }}</span><h3>{{ node }}</h3>
-          <p>{{ current?.states[i] || '等待操作' }}</p>
-          <small v-if="current?.focus===i">這一步更新的位置</small>
-        </section>
-      </div>
-      <div v-if="current?.from !== undefined" class="transfer" :class="{'transfer-lost':current.lost}">
-        <p>{{ config.nodes[current.from] }} → {{ config.nodes[current.focus] }} <strong v-if="current.lost">回應遺失，未送達</strong></p>
-        <svg viewBox="0 0 600 28" role="img" :aria-label="current.lost ? '回應在途中遺失' : '資訊送達目標'">
-          <path d="M12 14H588" /><circle cx="12" cy="14" r="5" /><circle cx="588" cy="14" r="5" />
-          <circle class="moving-packet" cx="12" cy="14" r="9" />
-        </svg>
-      </div>
+      <SystemDiagram :unit="unit" :labels="config.nodes" :states="current?.states || []" :focus="current?.focus ?? -1" :from="current?.from ?? -1" :lost="!!current?.lost" :parallel="unit==='optimization' && !!current?.timeline && !current?.dependent" :animate="!!current && motion" :title="config.title" />
       <section v-if="unit==='context'" class="context-window" aria-label="模型當前資訊容量">
         <h3>Context Window · {{ (current?.items || []).reduce((n,item)=>n+item[1],0) }} / 10 教學容量單位</h3>
         <div class="capacity-track"><span v-for="item in current?.items || []" :key="item[0]" :style="{width:item[1]*10+'%'}"></span></div>

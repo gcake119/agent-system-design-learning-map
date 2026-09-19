@@ -6,6 +6,7 @@ import { initialState, following, act } from './interaction.mjs';
 import ComparisonLab from './ComparisonLab.vue';
 import DesignNotebook from './DesignNotebook.vue';
 import UnitAnimation from './UnitAnimation.vue';
+import SystemDiagram from './SystemDiagram.vue';
 const variant = ref(0);
 const designMode = ref(location.hash === '#/design');
 const steps = ref([]);
@@ -201,42 +202,7 @@ onUnmounted(() => {
           <DesignNotebook v-if="current.design" :key="chapter.id" :unit="chapter.id" />
           <template v-else>
           <ComparisonLab v-if="current.deep" :key="chapter.id + '-' + current.id" :scene="current" :choice="choice" :variant="variant" @variant="changeVariant" />
-          <section v-else
-            class="story-stage"
-            :class="{ changed: interacted }"
-            aria-label="情境圖解"
-          >
-            <div
-              v-for="(label, i) in current.labels"
-              :key="i"
-              class="story-role"
-            >
-              <div class="role-icon" aria-hidden="true">
-                <svg viewBox="0 0 64 64">
-                  <template v-if="label === '你' || label === '使用者'">
-                    <circle cx="32" cy="19" r="9" />
-                    <path d="M15 52v-7a17 17 0 0 1 34 0v7M22 52V42M42 52V42" />
-                  </template>
-                  <template v-else-if="label.includes('助手') || label.includes('模型')">
-                    <rect x="12" y="17" width="40" height="33" rx="10" />
-                    <path d="M32 17V8M26 8h12M24 39h16" />
-                    <circle cx="24" cy="29" r="2" />
-                    <circle cx="40" cy="29" r="2" />
-                  </template>
-                  <template v-else>
-                    <rect x="13" y="10" width="38" height="44" rx="4" />
-                    <path d="M22 22h20M22 32h20M22 42h12" />
-                  </template>
-                </svg>
-              </div>
-              <h2>{{ label }}</h2>
-              <Transition name="card" mode="out-in"
-                ><p class="data-card" :key="cards[i]">
-                  {{ cards[i] }}
-                </p></Transition
-              ><span v-if="i < 2 && current.flow" class="flow-arrow" aria-hidden="true">{{current.returning?'←':'→'}}</span>
-            </div>
-          </section>
+          <SystemDiagram v-else unit="lesson" :key="chapter.id + '-' + locationState.page + '-' + choice + '-' + revealed" :labels="current.labels" :states="cards" :focus="interacted ? 2 : -1" :animate="interacted && !!current.flow" :connected="!!current.flow" :reverse="!!current.returning" :title="current.title" />
           <section class="interaction" aria-label="操作與說明">
             <template v-if="current.choices"
               ><p class="interaction-hint">

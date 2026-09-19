@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
+import SystemDiagram from './SystemDiagram.vue';
 import { designBriefs } from './deep-content.mjs';
 import { NOTEBOOK_KEY, parseNotebook, exportNotebook } from './notebook.mjs';
 import { WORKBENCH_KEY,workbenches,defaultDesign,readDesigns,simulateDesign,designMarkdown } from './design-workbench.mjs';
@@ -36,8 +37,7 @@ function download(currentDraft=false){let all={...saved.value};try{all={...all,.
   <label class="workbench-motion"><input type="checkbox" v-model="motion" />播放動態效果</label>
   <p class="quiet">已執行 {{step}} / {{simulation.frames.length}} 個動作。設定變更會重設演練；回退可還原設定與進度。</p>
   <div class="animation-stage" :key="id+'-'+playback">
-   <div class="animation-nodes" :style="{'--nodes':config.nodes.length}"><section v-for="(node,n) in config.nodes" :key="node" :class="{'node-active':current && n===Math.min(step-1,config.nodes.length-1)}"><span class="node-number">{{n+1}}</span><h3>{{node}}</h3><p>{{current?.states[n]||'等待執行'}}</p></section></div>
-   <div v-if="current" class="transfer"><p>{{current.action}} · 狀態更新</p><svg viewBox="0 0 600 28" role="img" aria-label="執行動作，更新任務狀態"><path d="M12 14H588"/><circle class="moving-packet" cx="12" cy="14" r="9"/></svg></div>
+   <SystemDiagram :unit="id" :labels="config.nodes" :parallel="!!current?.parallel" :states="current?.states || []" :focus="current ? Math.min(step-1,config.nodes.length-1) : -1" :animate="!!current && motion" :title="designBriefs[id].title + ' · 我的配置'" />
    <section v-if="current?.capacity!==undefined" class="context-window" aria-label="設計的資訊容量"><h3>目前資訊：{{current.capacity}} / 10 教學單位</h3><div class="capacity-track"><span :style="{width:current.capacity*10+'%'}"></span></div><p>{{current.states[1]}}</p></section>
    <section v-if="current?.records!==undefined" class="database-records" aria-label="設計的寫入效果"><h3>資料庫：{{current.records}} 筆提醒</h3><div v-for="n in current.records" :key="n" class="record" :class="{duplicate:n>1}">提醒 #{{n}} · {{n>1?'重複效果':'案件 #1024'}}</div></section>
    <section v-if="id==='evidence' && current" class="trace-list" aria-label="設計的驗收紀錄"><details v-for="(frame,n) in simulation.frames.slice(0,step)" :key="n"><summary>{{n+1}} · {{frame.action}} · 展開證據</summary><p>{{frame.trace}}</p><p>{{frame.explanation}}</p></details></section>
