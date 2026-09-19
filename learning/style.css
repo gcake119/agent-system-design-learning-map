@@ -318,6 +318,8 @@ main {
   gap: 15px;
 }
 .comparison-lab, .notebook { margin: 24px 0; }
+.unit-continuation { margin-top: 40px; padding: 24px; border: 2px solid #52745c; border-radius: 12px; background: #eef2e7; }
+.unit-continuation .primary { display: inline-flex; white-space: normal; line-height: 1.6; margin-top: 12px; }
 .evidence-panel { padding: 18px; background: #eef1e5; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 20px; }
 .evidence-panel summary, .notebook summary { cursor: pointer; font-weight: 600; }
 .evidence-panel li, .notebook p { line-height: 1.8; }

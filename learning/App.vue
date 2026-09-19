@@ -5,10 +5,11 @@ import { thesis, tracks } from './curriculum.mjs';
 import { initialState, following, act } from './interaction.mjs';
 import ComparisonLab from './ComparisonLab.vue';
 import DesignNotebook from './DesignNotebook.vue';
+import { designUnit } from './navigation.mjs';
 import UnitAnimation from './UnitAnimation.vue';
 import SystemDiagram from './SystemDiagram.vue';
 const variant = ref(0);
-const designMode = ref(location.hash === '#/design');
+const designMode = ref(designUnit(location.hash));
 const steps = ref([]);
 const locationState = ref(position(location.hash)),
   revealed = ref(false),
@@ -48,7 +49,7 @@ function remember() {
   }
 }
 async function sync() {
-  designMode.value = location.hash === '#/design';
+  designMode.value = designUnit(location.hash);
   variant.value = 0;
   steps.value = [];
   locationState.value = position(location.hash);
@@ -121,7 +122,7 @@ onUnmounted(() => {
       >
     </header>
     <main>
-      <template v-if="designMode"><DesignNotebook /></template>
+      <template v-if="designMode"><DesignNotebook :start-unit="designMode" /></template>
       <template v-else-if="locationState.map">
         <section class="welcome">
           <p class="eyebrow">互動式學習地圖</p>

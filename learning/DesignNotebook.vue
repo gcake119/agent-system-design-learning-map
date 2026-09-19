@@ -1,17 +1,21 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
+import { designRoute, nextUnit } from './navigation.mjs';
 import SystemDiagram from './SystemDiagram.vue';
 import { designBriefs } from './deep-content.mjs';
 import { NOTEBOOK_KEY, parseNotebook, exportNotebook } from './notebook.mjs';
 import { WORKBENCH_KEY,workbenches,defaultDesign,readDesigns,simulateDesign,designMarkdown } from './design-workbench.mjs';
-const props=defineProps({unit:String});
-const ids=Object.keys(workbenches),selected=ref(props.unit||ids[0]),saved=ref({}),legacy=ref({}),status=ref(''),storageFailed=ref(false),motion=ref(true);
+const props=defineProps({unit:String,startUnit:String});
+const ids=Object.keys(workbenches),selected=ref(props.unit||props.startUnit||ids[0]),saved=ref({}),legacy=ref({}),status=ref(''),storageFailed=ref(false),motion=ref(true);
+watch(()=>props.startUnit,value=>{if(ids.includes(value))selected.value=value;});
+function selectUnit(key){selected.value=key;status.value='';history.replaceState(null,'',designRoute(key));}
 try{saved.value=readDesigns(localStorage.getItem(WORKBENCH_KEY));legacy.value=parseNotebook(localStorage.getItem(NOTEBOOK_KEY));}catch{storageFailed.value=true;}
 const clone=d=>({...d,choices:[...d.choices]});
 const drafts=ref(Object.fromEntries(ids.map(id=>[id,clone(saved.value[id]||defaultDesign())])));
 const steps=ref(Object.fromEntries(ids.map(id=>[id,0]))),histories=ref(Object.fromEntries(ids.map(id=>[id,[]]))),playback=ref(0);
 const id=computed(()=>props.unit||selected.value),config=computed(()=>workbenches[id.value]),draft=computed(()=>drafts.value[id.value]),simulation=computed(()=>simulateDesign(id.value,draft.value)),step=computed(()=>steps.value[id.value]);
 const current=computed(()=>simulation.value.frames[step.value-1]),next=computed(()=>simulation.value.frames[step.value]);
+const continuation=computed(()=>nextUnit(id.value));
 const adopted=computed(()=>JSON.stringify(saved.value[id.value])===JSON.stringify(draft.value));
 const oldNote=computed(()=>legacy.value[id.value]);
 const hasOld=computed(()=>oldNote.value&&[oldNote.value.approach,...oldNote.value.fields,oldNote.value.rationale,oldNote.value.tradeoff,oldNote.value.revisit].some(t=>t.trim()));
@@ -26,7 +30,7 @@ function download(currentDraft=false){let all={...saved.value};try{all={...all,.
 <template>
  <section class="notebook design-workbench" aria-label="我的系統設計" :class="{'motion-off':!motion}">
   <template v-if="!unit"><h1>動手組成你的案件助手</h1><p>選擇設計、執行案例、觀察結果，再採用方案。七個單元的操作會自動整理成設計草稿。</p>
-   <nav class="design-unit-nav" aria-label="選擇設計單元"><button v-for="key in ids" :key="key" :aria-pressed="id===key" @click="selected=key;status=''">{{designBriefs[key].title}}<small>{{ saved[key]?'已採用':'尚未採用' }}</small></button></nav>
+   <nav class="design-unit-nav" aria-label="選擇設計單元"><button v-for="key in ids" :key="key" :aria-pressed="id===key" @click="selectUnit(key)">{{designBriefs[key].title}}<small>{{ saved[key]?'已採用':'尚未採用' }}</small></button></nav>
   </template>
   <h2>{{designBriefs[id].title}} · 設計工作台</h2>
   <p>每次只改一項選擇，觀察結果如何改變。以下為教學模擬，不會操作真實資料。</p>
@@ -53,7 +57,11 @@ function download(currentDraft=false){let all={...saved.value};try{all={...all,.
   <p v-if="saved[id]" class="quiet">{{adopted?'目前設定與已保存方案相同。':'目前操作尚未採用；已保存的方案仍保留。'}}</p>
   <details v-if="saved[id]" class="evidence-panel"><summary>查看已採用的設計</summary><p>{{simulateDesign(id,saved[id]).summary}}</p><p>演練條件：{{simulateDesign(id,saved[id]).scenario}}</p><p>觀察結果：{{simulateDesign(id,saved[id]).result}}</p><p>代價：{{simulateDesign(id,saved[id]).tradeoff}}</p><p v-if="saved[id].note">補充：{{saved[id].note}}</p></details>
   <details v-if="hasOld" class="evidence-panel"><summary>查看保留的舊版文字筆記</summary><p>{{oldNote.approach}}</p><p v-for="(field,n) in oldNote.fields" :key="n">{{designBriefs[id].fields[n]}}：{{field}}</p><p>理由：{{oldNote.rationale}}</p><p>代價：{{oldNote.tradeoff}}</p><p>重新評估：{{oldNote.revisit}}</p></details>
-  <div class="action-row"><button class="primary" @click="download(false)">下載已採用的整份設計</button><a v-if="unit" class="text-link" href="#/design">檢視七個單元的設計 →</a></div>
+  <div class="action-row"><button class="primary" @click="download(false)">下載已採用的整份設計</button><a v-if="unit" class="text-link" :href="designRoute(id)">檢視七個單元的設計（保留目前單元） →</a></div>
   <p v-if="status" role="status">{{status}}</p><p class="quiet">採用後保存在此瀏覽器，不會上傳。回退不會刪除已採用設計；尚未採用的操作離開頁面後會重設。</p>
+  <section class="unit-continuation" aria-label="繼續學習">
+   <template v-if="continuation"><p class="eyebrow">接下來的學習主題</p><h2>單元 {{continuation.number}} · {{continuation.title}}</h2><p>{{continuation.conclusion}}</p><p class="quiet">設計練習可稍後再做；若要保留目前的演練，請先採用設計。</p><a class="primary" :href="continuation.href">繼續單元 {{continuation.number}}：{{continuation.title}} →</a></template>
+   <template v-else><h2>已到最後一個單元</h2><p>可以回到章節地圖複習，或查看目前的設計成果。</p><a class="primary" href="#/map">返回章節地圖 →</a></template>
+  </section>
  </section>
 </template>
