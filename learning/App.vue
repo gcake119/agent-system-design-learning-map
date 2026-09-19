@@ -190,7 +190,7 @@ onUnmounted(() => {
         <p v-if="locationState.page !== 0"><a class="text-link" :href="route(chapter.number)">觀看本單元流程動畫 →</a></p>
         <UnitAnimation v-if="locationState.page === 0" :key="chapter.id" :unit="chapter.id" />
         <article class="lesson" :key="chapter.id + '-' + locationState.page">
-          <header class="lesson-title">
+          <header v-if="!current.design" class="lesson-title">
             <p class="eyebrow">
               {{
                 current.depth || (current.review ? '單元應用 · 先說出理由，再比較結果' : '透過操作理解原則')

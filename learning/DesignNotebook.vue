@@ -1,67 +1,40 @@
 <script setup>
-import { computed, ref, watch } from 'vue';
-import { designRoute, nextUnit } from './navigation.mjs';
-import SystemDiagram from './SystemDiagram.vue';
-import { designBriefs } from './deep-content.mjs';
-import { NOTEBOOK_KEY, parseNotebook, exportNotebook } from './notebook.mjs';
-import { WORKBENCH_KEY,workbenches,defaultDesign,readDesigns,simulateDesign,designMarkdown } from './design-workbench.mjs';
+import {computed,ref,watch} from 'vue';
+import {designRoute,nextUnit} from './navigation.mjs';
+import {designBriefs} from './deep-content.mjs';
+import {NOTEBOOK_KEY,parseNotebook,exportNotebook} from './notebook.mjs';
+import {WORKBENCH_KEY,readDesigns,designMarkdown} from './design-workbench.mjs';
+import {PRACTICE_KEY,practices,replayPractice,readPractices,practiceMarkdown} from './practice.mjs';
 const props=defineProps({unit:String,startUnit:String});
-const ids=Object.keys(workbenches),selected=ref(props.unit||props.startUnit||ids[0]),saved=ref({}),legacy=ref({}),status=ref(''),storageFailed=ref(false),motion=ref(true);
+const ids=Object.keys(practices),selected=ref(props.unit||props.startUnit||ids[0]),saved=ref({}),history=ref(Object.fromEntries(ids.map(id=>[id,[]]))),status=ref(''),motion=ref(true),playback=ref(0),storageFailed=ref(false),oldNotes=ref({}),oldDesigns=ref({});
+try{saved.value=readPractices(localStorage.getItem(PRACTICE_KEY));oldNotes.value=parseNotebook(localStorage.getItem(NOTEBOOK_KEY));oldDesigns.value=readDesigns(localStorage.getItem(WORKBENCH_KEY));}catch{storageFailed.value=true;}
 watch(()=>props.startUnit,value=>{if(ids.includes(value))selected.value=value;});
-function selectUnit(key){selected.value=key;status.value='';history.replaceState(null,'',designRoute(key));}
-try{saved.value=readDesigns(localStorage.getItem(WORKBENCH_KEY));legacy.value=parseNotebook(localStorage.getItem(NOTEBOOK_KEY));}catch{storageFailed.value=true;}
-const clone=d=>({...d,choices:[...d.choices]});
-const drafts=ref(Object.fromEntries(ids.map(id=>[id,clone(saved.value[id]||defaultDesign())])));
-const steps=ref(Object.fromEntries(ids.map(id=>[id,0]))),histories=ref(Object.fromEntries(ids.map(id=>[id,[]]))),playback=ref(0);
-const id=computed(()=>props.unit||selected.value),config=computed(()=>workbenches[id.value]),draft=computed(()=>drafts.value[id.value]),simulation=computed(()=>simulateDesign(id.value,draft.value)),step=computed(()=>steps.value[id.value]);
-const current=computed(()=>simulation.value.frames[step.value-1]),next=computed(()=>simulation.value.frames[step.value]);
-const continuation=computed(()=>nextUnit(id.value));
-const adopted=computed(()=>JSON.stringify(saved.value[id.value])===JSON.stringify(draft.value));
-const oldNote=computed(()=>legacy.value[id.value]);
-const hasOld=computed(()=>oldNote.value&&[oldNote.value.approach,...oldNote.value.fields,oldNote.value.rationale,oldNote.value.tradeoff,oldNote.value.revisit].some(t=>t.trim()));
-function snapshot(){histories.value[id.value].push({design:clone(draft.value),step:step.value});}
-function choose(index,value){if(draft.value.choices[index]===value)return;snapshot();draft.value.choices[index]=value;steps.value[id.value]=0;playback.value++;status.value='設定已改變，重新演練可觀察新的結果。';}
-function scenario(value){if(draft.value.scenario===value)return;snapshot();draft.value.scenario=value;steps.value[id.value]=0;playback.value++;status.value='情境已改變，設計選擇保持不變。';}
-function act(){if(!next.value)return;snapshot();steps.value[id.value]++;playback.value++;status.value='';}
-function undo(){const previous=histories.value[id.value].pop();if(!previous)return;drafts.value[id.value]=previous.design;steps.value[id.value]=previous.step;playback.value++;status.value='已還原上一步的設定與演練進度。';}
-function adopt(){if(next.value)return;try{const all=readDesigns(localStorage.getItem(WORKBENCH_KEY));all[id.value]=clone(draft.value);localStorage.setItem(WORKBENCH_KEY,JSON.stringify({version:2,entries:all}));saved.value=all;storageFailed.value=false;status.value='已採用並保存這個設計，重新開啟仍可繼續調整。';}catch{storageFailed.value=true;status.value='無法保存到瀏覽器，請下載目前演練草稿。';}}
-function download(currentDraft=false){let all={...saved.value};try{all={...all,...readDesigns(localStorage.getItem(WORKBENCH_KEY))};}catch{}if(currentDraft)all[id.value]=clone(draft.value);let text=designMarkdown(all);if(Object.values(legacy.value).some(e=>[e.approach,...e.fields,e.rationale,e.tradeoff,e.revisit].some(t=>t.trim())))text+='\n\n# 保留的舊版文字筆記\n\n'+exportNotebook(legacy.value);const url=URL.createObjectURL(new Blob([text],{type:'text/markdown;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='agent-system-design.md';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);status.value='已發出下載請求；'+(currentDraft?'包含目前尚未保存的演練草稿。':'內容為已採用的設計與保留的舊筆記。');}
+const id=computed(()=>props.unit||selected.value),task=computed(()=>practices[id.value]),events=computed(()=>history.value[id.value]),state=computed(()=>replayPractice(id.value,events.value)),scene=computed(()=>task.value.scenes[state.value.scene]),continuation=computed(()=>nextUnit(id.value));
+const savedScene=computed(()=>saved.value[id.value]?task.value.scenes[replayPractice(id.value,saved.value[id.value]).scene]:null);
+function selectUnit(key){selected.value=key;status.value='';window.history.replaceState(null,'',designRoute(key));}
+function perform(type,index){if(events.value.length>=150){status.value='這次操作紀錄已滿，請重新練習。';return;}history.value[id.value]=[...events.value,{type,index}];playback.value++;status.value='';}
+function undo(){history.value[id.value]=events.value.slice(0,-1);playback.value++;status.value='已還原剛才的選擇與案件狀態。';}
+function restart(){history.value[id.value]=[];playback.value++;status.value='已回到案件起點，保存過的規則仍保留。';}
+function save(){if(!scene.value.rule)return;try{const all=readPractices(localStorage.getItem(PRACTICE_KEY));all[id.value]=events.value.map(e=>({...e}));localStorage.setItem(PRACTICE_KEY,JSON.stringify({version:3,entries:all}));saved.value=all;storageFailed.value=false;status.value='已保存這次操作與處理規則。';}catch{storageFailed.value=true;status.value='無法保存，請下載這次處理紀錄。';}}
+function download(current=false){let all={...saved.value};try{all={...all,...readPractices(localStorage.getItem(PRACTICE_KEY))};}catch{}if(current&&scene.value.rule)all[id.value]=events.value;let text=practiceMarkdown(all);if(Object.keys(oldDesigns.value).length)text+='\n\n# 保留的舊版設計\n\n'+designMarkdown(oldDesigns.value);if(Object.values(oldNotes.value).some(e=>[e.approach,...e.fields,e.rationale,e.tradeoff,e.revisit].some(t=>t.trim())))text+='\n\n# 保留的舊版筆記\n\n'+exportNotebook(oldNotes.value);const url=URL.createObjectURL(new Blob([text],{type:'text/markdown;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='agent-case-rules.md';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);status.value='已發出下載請求，請查看瀏覽器下載項目。';}
 </script>
 <template>
- <section class="notebook design-workbench" aria-label="我的系統設計" :class="{'motion-off':!motion}">
-  <template v-if="!unit"><h1>動手組成你的案件助手</h1><p>選擇設計、執行案例、觀察結果，再採用方案。七個單元的操作會自動整理成設計草稿。</p>
-   <nav class="design-unit-nav" aria-label="選擇設計單元"><button v-for="key in ids" :key="key" :aria-pressed="id===key" @click="selectUnit(key)">{{designBriefs[key].title}}<small>{{ saved[key]?'已採用':'尚未採用' }}</small></button></nav>
-  </template>
-  <h2>{{designBriefs[id].title}} · 設計工作台</h2>
-  <p>每次只改一項選擇，觀察結果如何改變。以下為教學模擬，不會操作真實資料。</p>
-  <div class="design-settings">
-   <fieldset v-for="(control,index) in config.controls" :key="id+'-'+index"><legend>{{control.label}}</legend><div class="animation-modes"><button v-for="(option,n) in control.options" :key="option" :aria-pressed="draft.choices[index]===n" @click="choose(index,n)">{{option}}</button></div></fieldset>
-  </div>
-  <fieldset><legend>用哪種情境試驗？</legend><div class="animation-modes"><button v-for="(condition,n) in config.scenario" :key="condition" :aria-pressed="draft.scenario===n" @click="scenario(n)">{{condition}}</button></div></fieldset>
-  <label class="workbench-motion"><input type="checkbox" v-model="motion" />播放動態效果</label>
-  <p class="quiet">已執行 {{step}} / {{simulation.frames.length}} 個動作。設定變更會重設演練；回退可還原設定與進度。</p>
-  <div class="animation-stage" :key="id+'-'+playback">
-   <SystemDiagram :unit="id" :labels="config.nodes" :parallel="!!current?.parallel" :states="current?.states || []" :focus="current ? Math.min(step-1,config.nodes.length-1) : -1" :animate="!!current && motion" :title="designBriefs[id].title + ' · 我的配置'" />
-   <section v-if="current?.capacity!==undefined" class="context-window" aria-label="設計的資訊容量"><h3>目前資訊：{{current.capacity}} / 10 教學單位</h3><div class="capacity-track"><span :style="{width:current.capacity*10+'%'}"></span></div><p>{{current.states[1]}}</p></section>
-   <section v-if="current?.records!==undefined" class="database-records" aria-label="設計的寫入效果"><h3>資料庫：{{current.records}} 筆提醒</h3><div v-for="n in current.records" :key="n" class="record" :class="{duplicate:n>1}">提醒 #{{n}} · {{n>1?'重複效果':'案件 #1024'}}</div></section>
-   <section v-if="id==='evidence' && current" class="trace-list" aria-label="設計的驗收紀錄"><details v-for="(frame,n) in simulation.frames.slice(0,step)" :key="n"><summary>{{n+1}} · {{frame.action}} · 展開證據</summary><p>{{frame.trace}}</p><p>{{frame.explanation}}</p></details></section>
-   <section v-if="current?.timeline" class="workbench-timeline" aria-label="設計的執行時間軸"><p v-if="current.failed">信箱查詢缺少案件編號，未完成；不能以短時間宣稱優化成功。</p><template v-else><p>相同 0–6 秒刻度 · 總計 {{current.parallel?4:6}} 秒</p><div v-for="bar in [{label:'案件',start:0,duration:3},{label:'信箱',start:current.parallel?0:3,duration:2},{label:'驗證',start:current.parallel?3:5,duration:1}]" :key="bar.label"><p>{{bar.label}}：{{bar.start}}–{{bar.start+bar.duration}} 秒</p><div class="timeline-track"><span class="timeline-bar" :style="{marginLeft:bar.start/6*100+'%',width:bar.duration/6*100+'%','--delay':bar.start+'s','--duration':bar.duration+'s'}"></span></div></div></template></section>
-   <section v-if="current?.packet" class="handoff-packet" aria-label="設計的交接包"><h3>交接內容</h3><ul><li v-for="item in current.packet" :key="item">{{item}}</li></ul></section>
-  </div>
-  <p class="animation-explanation" role="status">{{current?.explanation||'先選設定，再按下動作按鈕。你不需要先寫出整份設計。'}}</p>
-  <div class="animation-actions"><button class="primary" :disabled="!histories[id].length" @click="undo">← 回到上一步</button><button v-if="next" class="primary" @click="act">{{next.action}} →</button><button v-if="current" class="primary" @click="playback++">重播這次變化</button></div>
-  <section v-if="!next" class="design-result" aria-label="操作產生的設計草稿"><h3>這次操作產生的設計草稿</h3><p><strong>方案：</strong>{{simulation.summary}}</p><p><strong>試驗條件：</strong>{{simulation.scenario}}</p><p><strong>觀察結果：</strong>{{simulation.result}}</p><p><strong>接受的代價：</strong>{{simulation.tradeoff}}</p><p><strong>重新評估條件：</strong>{{simulation.revisit}}</p><p v-if="simulation.risk" class="design-caution">此配置有待改善的風險。可以回到設定比較，也可保存為待改進草稿。</p><p class="quiet">這份草稿只記錄你操作過的案例，不代表所有情境都已通過驗證。</p>
-   <details><summary>補充自己的想法（選填）</summary><label>我的補充<textarea v-model="draft.note" maxlength="2000" rows="3"></textarea></label></details>
-   <button class="primary" @click="adopt">{{simulation.risk?'採用為待改進草稿':'採用這個設計'}}</button><button v-if="storageFailed" class="primary" @click="download(true)">下載目前演練草稿</button>
+ <section class="notebook case-practice" aria-label="案件設計練習" :class="{'motion-off':!motion}">
+  <template v-if="!unit"><h1>處理一個案件，學會一條設計規則</h1><p>先做眼前的決定，看看會發生什麼。完成後，系統會把你的操作整理成規則。</p><nav class="design-unit-nav" aria-label="選擇練習單元"><button v-for="key in ids" :key="key" :aria-pressed="id===key" @click="selectUnit(key)">{{designBriefs[key].title}}<small>{{saved[key]?'已保存練習':'尚未保存'}}</small></button></nav></template>
+  <div class="case-brief"><p class="eyebrow">案件 #1024 · {{designBriefs[id].title}}</p><h2>{{task.title}}</h2><p>{{task.brief}}</p></div>
+  <label class="practice-motion"><input type="checkbox" v-model="motion"/>播放操作動畫</label>
+  <section class="case-scene" :key="id+'-'+state.scene+'-'+playback" aria-label="目前案件狀態">
+   <h3>{{scene.title}}</h3>
+   <div class="case-artifacts"><article v-for="(item,n) in scene.cards" :key="item.title" class="case-artifact" :class="'artifact-'+item.status" :style="{'--arrival':n*0.12+'s'}"><div class="paper-corner" aria-hidden="true"></div><p class="artifact-kind">{{item.status==='danger'?'！需要修正':item.status==='success'?'✓ 已確認':item.status==='pending'?'◷ 尚待處理':'案件資料'}}</p><h4>{{item.title}}</h4><p>{{item.body}}</p></article></div>
+   <template v-if="scene.pick"><h4>桌上的資料</h4><div class="pick-documents"><button v-for="(item,n) in scene.pick" :key="item.title" :aria-pressed="state.selected.includes(n)" @click="perform('toggle',n)"><strong>{{state.selected.includes(n)?'✓ 已放入':'＋ 放入'}} {{item.title}}</strong><span>{{item.body}}</span></button></div><div class="selected-packet" aria-label="已選的資料包"><h4>你的{{id==='multi'?'交接包':'資料包'}} · {{state.selected.length}} 份</h4><p v-if="!state.selected.length">點選上方文件，把資料放進來。</p><span v-for="n in state.selected" :key="n" class="packet-chip">{{scene.pick[n].title}}</span></div></template>
+   <div v-if="scene.timeline" class="workbench-timeline" aria-label="實際執行時間軸"><p>教學假設 · 同一刻度 0–6 秒</p><div v-for="bar in [{label:'查案件',start:0,duration:3},{label:'查信箱',start:scene.timeline==='parallel'?0:3,duration:2},{label:'核對',start:scene.timeline==='parallel'?3:5,duration:1}]" :key="bar.label"><p>{{bar.label}}：{{bar.start}}–{{bar.start+bar.duration}} 秒</p><div class="timeline-track"><span class="timeline-bar" :style="{marginLeft:bar.start/6*100+'%',width:bar.duration/6*100+'%','--delay':bar.start+'s','--duration':bar.duration+'s'}"></span></div></div></div>
   </section>
-  <p v-if="saved[id]" class="quiet">{{adopted?'目前設定與已保存方案相同。':'目前操作尚未採用；已保存的方案仍保留。'}}</p>
-  <details v-if="saved[id]" class="evidence-panel"><summary>查看已採用的設計</summary><p>{{simulateDesign(id,saved[id]).summary}}</p><p>演練條件：{{simulateDesign(id,saved[id]).scenario}}</p><p>觀察結果：{{simulateDesign(id,saved[id]).result}}</p><p>代價：{{simulateDesign(id,saved[id]).tradeoff}}</p><p v-if="saved[id].note">補充：{{saved[id].note}}</p></details>
-  <details v-if="hasOld" class="evidence-panel"><summary>查看保留的舊版文字筆記</summary><p>{{oldNote.approach}}</p><p v-for="(field,n) in oldNote.fields" :key="n">{{designBriefs[id].fields[n]}}：{{field}}</p><p>理由：{{oldNote.rationale}}</p><p>代價：{{oldNote.tradeoff}}</p><p>重新評估：{{oldNote.revisit}}</p></details>
-  <div class="action-row"><button class="primary" @click="download(false)">下載已採用的整份設計</button><a v-if="unit" class="text-link" :href="designRoute(id)">檢視七個單元的設計（保留目前單元） →</a></div>
-  <p v-if="status" role="status">{{status}}</p><p class="quiet">採用後保存在此瀏覽器，不會上傳。回退不會刪除已採用設計；尚未採用的操作離開頁面後會重設。</p>
-  <section class="unit-continuation" aria-label="繼續學習">
-   <template v-if="continuation"><p class="eyebrow">接下來的學習主題</p><h2>單元 {{continuation.number}} · {{continuation.title}}</h2><p>{{continuation.conclusion}}</p><p class="quiet">設計練習可稍後再做；若要保留目前的演練，請先採用設計。</p><a class="primary" :href="continuation.href">繼續單元 {{continuation.number}}：{{continuation.title}} →</a></template>
-   <template v-else><h2>已到最後一個單元</h2><p>可以回到章節地圖複習，或查看目前的設計成果。</p><a class="primary" href="#/map">返回章節地圖 →</a></template>
-  </section>
+  <div class="animation-actions"><button class="primary" :disabled="!events.length" @click="undo">← 回到上一步</button><button v-for="(action,n) in scene.actions" :key="action.label" class="primary" @click="perform('act',n)">{{action.label}} →</button><button v-if="events.length" class="primary" @click="playback++">重播這次變化</button></div>
+  <section v-if="scene.rule" class="design-result" aria-label="從操作學到的規則"><p class="eyebrow">{{scene.warning?'這次發現的問題':'從剛才的操作整理'}}</p><h3>{{scene.warning?'這個做法需要調整':'可以留下的處理規則'}}</h3><p>{{scene.rule}}</p><p><strong>對應的設計觀念：</strong>{{scene.term}}</p><p v-if="scene.warning">可以回到上一步，試試另一種處理方式。</p><div class="animation-actions"><button class="primary" @click="save">{{scene.warning?'保存這次待改善紀錄':'保存這條處理規則'}}</button><button class="primary" @click="restart">重新處理這個案件</button><button v-if="storageFailed" class="primary" @click="download(true)">下載這次處理紀錄</button></div></section>
+  <p v-if="status" role="status">{{status}}</p>
+  <details v-if="savedScene" class="evidence-panel"><summary>查看已保存的處理規則</summary><p>{{savedScene.title}}</p><p>{{savedScene.rule}}</p><p>{{savedScene.warning?'此紀錄仍待改善。':'只代表這個教學案例的結果，未驗證真實系統。'}}</p></details>
+  <details v-if="oldDesigns[id]||oldNotes[id]" class="evidence-panel"><summary>保留的舊版設計與筆記</summary><p>原本的內容保留在此瀏覽器，下載時會一併附上。</p><pre v-if="oldDesigns[id]">{{designMarkdown({[id]:oldDesigns[id]})}}</pre><pre v-if="oldNotes[id]">{{exportNotebook({[id]:oldNotes[id]})}}</pre></details>
+  <div class="action-row"><button class="primary" @click="download(false)">下載已保存的處理規則</button><a v-if="unit" class="text-link" :href="designRoute(id)">查看七個單元的練習 →</a></div><p class="quiet">案例均為教學模擬，不會修改真實資料。保存後留在此瀏覽器；回退不會刪除已保存規則。</p>
+  <section class="unit-continuation" aria-label="繼續學習"><template v-if="continuation"><p class="eyebrow">接下來的學習主題</p><h2>單元 {{continuation.number}} · {{continuation.title}}</h2><p>{{continuation.conclusion}}</p><p class="quiet">可先保存這次練習，也可以直接繼續學習。</p><a class="primary" :href="continuation.href">繼續單元 {{continuation.number}}：{{continuation.title}} →</a></template><template v-else><h2>已到最後一個單元</h2><a class="primary" href="#/map">返回章節地圖 →</a></template></section>
  </section>
 </template>
