@@ -198,6 +198,8 @@ onUnmounted(() => {
             <p class="section-objective"><strong>這一節要學會：</strong>{{ current.objective }}</p>
             <p class="lead">{{ current.intro }}</p>
           </header>
+          <DesignNotebook v-if="current.design" :key="chapter.id" :unit="chapter.id" />
+          <template v-else>
           <ComparisonLab v-if="current.deep" :key="chapter.id + '-' + current.id" :scene="current" :choice="choice" :variant="variant" @variant="changeVariant" />
           <section v-else
             class="story-stage"
@@ -272,7 +274,6 @@ onUnmounted(() => {
                   : "按上方按鈕，看圖中的資訊如何改變。"
               }}
             </p>
-            <DesignNotebook v-if="current.design" :key="chapter.id" :unit="chapter.id" :approach="choice >= 0 ? current.choices[choice].label : ''" />
             <div v-if="interacted && upcomingScene" class="upcoming-action">
               <p class="eyebrow">{{ upcoming.chapter !== locationState.chapter ? chapters[upcoming.chapter].title : '接著要處理的事' }}</p>
               <template v-if="upcoming.chapter !== locationState.chapter">
@@ -298,6 +299,7 @@ onUnmounted(() => {
               <a href="#/design" class="primary">整合我的案件助手設計 →</a>
             </div>
           </section>
+          </template>
         </article>
         <p class="reading-note">
           動作按鈕會直接改變情境；回到上一步可還原剛才的操作與選擇。也可隨時從章節地圖切換主題。
