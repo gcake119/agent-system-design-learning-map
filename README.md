@@ -14,6 +14,10 @@
 
 ## 開發與部署
 
+七個單元入口各有一個流程動畫實驗：完整查詢、循環與恢復、資訊壓縮與刷新、寫入逾時、trace 取證、平行時間軸、多助手交接。動作逐步推進；實驗內可切換條件、還原上一步及重播。動畫狀態不寫入設計筆記，離開情境後重設。支援手動關閉動態及系統 reduced-motion，靜態結果與資訊完全相同。
+
+動畫內容與轉移位於 `learning/animations.mjs`，畫面為 `learning/UnitAnimation.vue`，樣式為 `learning/animation.css`。
+
 使用 Node.js 22、pnpm 11.19.0。
 
 ```sh

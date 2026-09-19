@@ -5,6 +5,7 @@ import { thesis, tracks } from './curriculum.mjs';
 import { initialState, following, act } from './interaction.mjs';
 import ComparisonLab from './ComparisonLab.vue';
 import DesignNotebook from './DesignNotebook.vue';
+import UnitAnimation from './UnitAnimation.vue';
 const variant = ref(0);
 const designMode = ref(location.hash === '#/design');
 const steps = ref([]);
@@ -184,6 +185,8 @@ onUnmounted(() => {
           </details>
           <nav class="welcome-actions" aria-label="單元探索"><a class="text-link" :href="route(chapter.number, chapter.pages.findIndex(p => p.deep))">直接比較設計方案 →</a><a class="text-link" :href="route(chapter.number, chapter.pages.length - 1)">制定{{ chapter.design.title }} →</a></nav>
         </section>
+        <p v-if="locationState.page !== 0"><a class="text-link" :href="route(chapter.number)">觀看本單元流程動畫 →</a></p>
+        <UnitAnimation v-if="locationState.page === 0" :key="chapter.id" :unit="chapter.id" />
         <article class="lesson" :key="chapter.id + '-' + locationState.page">
           <header class="lesson-title">
             <p class="eyebrow">
