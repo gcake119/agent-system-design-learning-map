@@ -5,3 +5,5 @@ import './animation.css'
 import './diagram.css'
 import './practice.css'
 createApp(App).mount('#app')
+
+import './system-lab.css';
