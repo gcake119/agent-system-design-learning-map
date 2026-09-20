@@ -15,7 +15,7 @@ export const labs={
 export function cleanConfig(id,input={}){const lab=labs[id];return Object.fromEntries(lab.options.map(o=>[o.key,o.choices.some(c=>c.value===input[o.key])?input[o.key]:lab.defaults[o.key]]));}
 export function simulate(id,input){const c=cleanConfig(id,input),events=[];let metrics={};let pass=false;let outcome='';
  const add=(from,to,label,patch={},extra={})=>events.push({from,to,label,patch,...extra});
- const end=(ok,text,m)=>{pass=ok;outcome=text;metrics=m;add('data','result',text,{result:text},{kind:ok?'success':'warning'});};
+ const end=(ok,text,m)=>{pass=ok;outcome=text;metrics=m;add(['context','evidence'].includes(id)?'tool':id==='reliability'?'agent':'data','result',text,{result:text},{kind:ok?'success':'warning'});};
  if(id==='overview'){
  add('agent',c.guard==='on'?'gate':'tool','送出缺件查詢',{agent:'查 #1024 缺件',gate:c.guard==='on'?'查詢通過權限檢查':'未設檢查'});
  add(c.guard==='on'?'gate':'tool',c.guard==='on'?'tool':'data','讀取案件附件',{tool:'唯讀查詢完成',data:'附件 A、A-補正版都存在'});
@@ -48,6 +48,7 @@ export function simulate(id,input){const c=cleanConfig(id,input),events=[];let m
  add('agent','gate','執行結果不明的處理策略',{gate:c.recovery==='retry'?'重新建立':c.recovery==='lookup'?'查詢 op-1024':'沿用 op-1024 重試'});
  add('gate','tool',c.recovery==='retry'?'送出新的建立操作':c.recovery==='lookup'?'查詢原操作紀錄':'用相同操作鍵重試',{tool:c.recovery==='retry'?'收到新操作':'辨識為原操作 op-1024'});
  add('tool','data',c.recovery==='retry'?'新增第二張提醒':'找到原本的 R1',{data:c.recovery==='retry'?'R1：請補 B｜R2：請補 B':'R1：請補 B（維持一張）'});
+ add('tool','agent','將查詢或重試結果傳回助手',{agent:c.recovery==='retry'?'新提醒 R2 已建立':'已確認原提醒 R1'});
  end(c.recovery!=='retry',c.recovery==='retry'?'同一案件出現兩張提醒':'確認原提醒，沒有重複建立',{提醒張數:c.recovery==='retry'?2:1,工具呼叫:2});}
  }
  if(id==='evidence'){
