@@ -1,9 +1,9 @@
 import { createApp } from 'vue'
-import App from './App.vue'
+import RouteShell from './RouteShell.vue'
 import './style.css'
 import './animation.css'
 import './diagram.css'
 import './practice.css'
-createApp(App).mount('#app')
+createApp(RouteShell).mount('#app')
 
 import './system-lab.css';
