@@ -1,6 +1,6 @@
 # Unit 4 Canonical Content v0.1 — 決定工作的順序、等待與交接
 
-> 狀態：Draft，待使用者確認與 Content Review。
+> 狀態：Canonical Content v0.1 方向已由使用者確認（2026-09-25）；待 subject-matter Content Review。
 > 本文件定義 Unit 4 必須正確傳達的 instructional meaning；不是 message broker、Kafka 或 workflow framework 教學。
 
 ## Central question
