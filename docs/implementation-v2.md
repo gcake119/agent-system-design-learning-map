@@ -1,7 +1,7 @@
 # Implementation Plan — Learning Map v2
 
 > 日期：2026-09-25
-> 狀態：Technical QA PASS（2026-09-26）；待 Human Learning Review
+> 狀態：Technical QA PASS WITH FINDINGS（2026-09-26）；待 Human Learning Review
 > Branch: `learning-map-v2`
 > Source of truth: confirmed curriculum → canonical content → cross-unit review → interaction storyboard → learning copy
 
@@ -142,7 +142,19 @@ GitHub connector 可以提交程式與檢查 repository state，但本階段需�
 
 ### Remaining findings／判定
 
-- **Technical QA：PASS。** 此判定只涵蓋本地程式、路由、模擬器基本因果、可操作性與上述瀏覽器矩陣，不等於教學內容已通過真人理解測試，也不等於正式部署驗收。
+- **Technical QA：PASS WITH FINDINGS。** 本地程式、路由、模擬器基本因果、可操作性與上述瀏覽器矩陣可用；以下補查 finding 尚未修正。此判定不等於教學內容已通過真人理解測試，也不等於正式部署驗收。
 - 非 Transfer 段落仍保有選項式 reflection，雖然 simulator 是主要操作面，但其題目與上方參數變化是否足夠連動，需要 Human Learning Review 觀察。不要以自動測試將此判成學習效果 PASS。
 - Rollout 模型假設舊版使用者比例與新版流量比例互補、流量均勻混合；真實系統的舊 consumer、共享資料和路由策略可能不同。畫面與測試數值僅是 deterministic synthetic teaching model，不代表真實部署故障率或雲端產品效能。
 - 請真人逐章觀察：學習者是否知道要改哪個控制項、能否說出 metrics 與 reflection 的關係、術語是否仍過密，以及 transfer 能否在沒有選項答案時獨立推理。完成本次 Technical QA 後停止，等待 Human Learning Review。
+
+### Handoff 補查 finding（2026-09-26）
+
+- **Technical｜Unit 2**：在「多個 Services」狀態下，切換「Payment 獨立部署」沒有可見差異；該狀態可能已隱含獨立部署，UI 應說明或停用重複控制。`#/v2/boundaries/contract`。
+- **Technical｜Unit 8**：選「不相容」時 Backend 圖仍標示 `old + new contract`，與控制項／受影響流量矛盾。`#/v2/evolution/migration`。
+- **Technical／Learning UX｜Final**：五個事故的指標會隨控制項重算，但上方 system chain 固定，沒有把後果標回節點／邊；反思需由學習者自行從下方數值對照。`#/v2/final/*`。
+- **Learning UX｜Final**：部分事故的提示直接點名 retry、冪等、queue、compatibility 等機制；雖無選項卡與章節標籤，作為無提示整合遷移仍有答案洩漏。`learning/v2/sim/final-integrated.mjs`。
+- **Technical｜Reset**：`resetLabSession()` 有程式函式與測試，但目前畫面上的「重新比較」只清除反思選擇，不重設 simulator；重新載入頁面會恢復預設值。`learning/v2/LearningMapV2.vue`。
+- **Subject-matter finding｜Unit 4**：同步模式也顯示「10 秒後 backlog」，且模型以到達量大於工作者處理量計算。同步請求也可能等待，但此標籤容易被理解為已存在 queue；需以 Canonical Content 核對等待位置與用語。`#/v2/async/wait`。
+- **Subject-matter finding｜Unit 7**：節點圖顯示 offered QPS，而總吞吐量顯示完成量；超載時若未標出兩者差別，學習者可能把節點收到的量誤認為成功處理量。`#/v2/scale/cache`。
+
+以上 finding 未阻止開始實際學習；進入 Final 前應優先處理固定鏈圖與機制提示。人工學習觀察應記入私人 Learning Handoff，再判斷哪些是可泛化的課程修正。
