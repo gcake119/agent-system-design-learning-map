@@ -1,6 +1,6 @@
 # Unit 6 Canonical Content v0.1 — 驗證行為，觀察與定位問題
 
-> 狀態：Draft，待使用者確認與 Content Review。
+> 狀態：Canonical Content v0.1 方向已由使用者確認（2026-09-25）；待 subject-matter Content Review。
 > 本文件定義 Unit 6 必須正確傳達的 instructional meaning；不是特定 testing framework、APM 或 observability vendor 教學。
 
 ## Central question
