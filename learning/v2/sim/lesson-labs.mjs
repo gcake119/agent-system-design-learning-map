@@ -47,7 +47,7 @@ export const lessonLabs={
   transfer:{focus:'transfer',note:'把同一模型帶到 frontend/backend/document-engine 的跨 repo change。'}
  }}
 };
-export function labFor(unitId,stageId){return lessonLabs[unitId]?.stages?.[stageId]||null}
+export function labFor(unitId,stageId){const unit=lessonLabs[unitId];const stage=unit?.stages?.[stageId];return stage?{component:unit.component,...stage}:null}
 export const focusControls={
  requirements:{requirements:['預約規則','情境條件'],rule:['預約規則'],transfer:['預約規則','情境條件']},
  boundaries:{layout:['部署方式'],contract:['部署方式','Payment boundary','共享寫入'],trust:['部署方式','Payment boundary','前端授權'],transfer:['部署方式','Payment boundary','共享寫入','前端授權']},
