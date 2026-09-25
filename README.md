@@ -1,78 +1,60 @@
-# Agent System Design 互動式學習地圖
+# System Design 互動式學習地圖
 
-> **v2 重製中：課程主體已改為 System Design。** AI Agent 是分析需求、提出假設、比較方案與驗證設計的協作者，不再是課程主軸。新版位於 `learning-map-v2` branch / `#/v2`，目前進入 Technical QA；以下舊版七單元說明在 v2 merge 前保留作 legacy reference。
+用互動模擬學 System Design：改變需求、系統元件與參數，直接觀察資料正確性、等待時間、失敗、瓶頸與版本相容性如何跟著改變。
 
-## v2 教材與互動參考來源
+課程以 **System Design** 為主體；AI Agent 是協助整理需求、提出假設、比較方案與驗證設計的工具。
 
-新版的內容來源與使用邊界完整記錄於 `docs/source-strategy.md`。主要來源分為：
+> v2 目前在 `learning-map-v2` branch 開發與 Technical QA，入口為 `#/v2`。正式合併前，`main` 的舊版教材仍保留。
 
-- **System Design 主體**：ByteByteGo System Design 教材／使用者提供的 2025 archive PDF、*Designing Data-Intensive Applications (DDIA)*、System Design Primer。
-- **原理與工程驗證**：MIT 6.5840 Distributed Systems、CMU 15-440 Distributed Systems、AWS Well-Architected Framework、Azure Architecture Center；特定機制再以 PostgreSQL 等官方文件核實。
-- **需求／驗證方法補充**：Cucumber BDD / Example Mapping，以及使用者提供的 BDD 線上課程大綱作 curriculum reference。
-- **AI 協作者層**：`bojieli/ai-agent-book`、Stanford CS329Z — Engineering AI Agents。這些來源用於「AI 如何協助 System Design reasoning」，不決定 System Design 主課綱。
-- **Presentation reference**：ByteByteGo 的圖解語言與資訊視覺化。
-- **Interaction reference**：`gcake119/system-design-simulator`。v2 參考其「改 workload／component／policy → 重算 system state / metrics → 顯示 bottleneck / trade-off」的互動模型，但不採 interview scoring、Architect Level、完整 component palette 或真實 benchmark 假設。
+## 直接使用
 
-所有 simulator 數字都是 **synthetic teaching assumptions**，不代表真實雲端服務、資料庫、Redis、Kafka 或其他產品 benchmark。內容正確性以 Canonical Content 與 Content Review 為準，interaction reference 不作 subject-matter authority。
+如果只是想學習，不需要安裝 Skill，也不需要先會寫程式。
 
+課程從八個問題展開：
 
-一套 Vue 互動教材，地圖只負責章節導航，不另設純簡報模式。
+1. 到底要做到什麼？
+2. 這件事誰負責？
+3. 兩個人同時改資料會怎樣？
+4. 誰要等到哪一步？
+5. 出錯後，我現在到底知道什麼？
+6. 我憑什麼說做到了？
+7. 到底是哪裡撐不住？
+8. 新版怎麼換上去，舊東西才不會壞？
 
-七個單元、79 個互動情境：完整系統、任務推進、適當資訊、可控失敗、證據驗收、量測改善、分工取捨。以「能完成、能信任、能改善」組織課程，Observability 與 Evaluation 整合為證據驗收。
+每章會讓你操作一個小型 system simulator。改變 workload、元件或 policy 後，系統狀態與 metrics 會一起改變。沒有計分，也不需要先背架構圖。
 
-採金字塔原理：先給單元結論與學習目標，再透過情境操作理解理由。每小節有具體學習目標，每單元以新情境檢查能否運用。全部單元自由閱讀，不計分、不解鎖。
+## Fork 後可以做什麼？
 
-操作按鈕直接執行動作並更新圖解，沒有上一頁／下一頁按鈕或方向鍵翻頁。結果下方呈現接續情境與可執行動作。「回到上一步」依操作歷史還原圖解、回饋與選擇，包括跨情境、跨章及比較選項。切換地圖／直接網址或重新整理會清空這段暫存操作歷史。
+Fork 這個 repo 後，可以把它變成自己的學習版本：
 
-深入內容依「原則 → 機制 → 比較 → 邊界 → 設計」編排，提供 24 個方案比較案例與 7 份單元設計。可展開證據、預測結果，並在部分案例切換條件。
+- 修改或增加案例；
+- 針對不懂的概念增加說明與練習；
+- 調整課程順序與深度；
+- 加入自己的專案作 transfer 練習；
+- 搭配 `learning-map` Skill，讓 Agent 依實際學習回饋持續修改教材。
 
-`#/design` 為互動設計工作台：每單元以兩組選擇與兩種試驗情境操作動畫，演練後自動產生方案、結果、代價與重新評估條件。按「採用這個設計」才保存；文字補充為選填。可下載已採用的七份草稿，舊版文字筆記保留供查看及匯出。資料只存於目前瀏覽器，不會傳到伺服器。
+`learning-map` Skill：  
+https://github.com/gcake119/learning-map
 
+個人的學習紀錄、Learning Handoff 或 Agent 對學習狀況的判斷，建議保存在 private repo 或私人檔案，**不要 commit 到公開 fork**。
 
-## 使用方式：直接學習或 Fork 成自己的教材
+## 教材來源
 
-這份公開教材可以直接使用，不需要先安裝 `learning-map` Skill，也不需要建立個人學習紀錄。
+主要參考：
 
-如果希望讓 Agent 根據自己的學習狀況持續調整教材，可以 Fork 本 repo，搭配：
+- ByteByteGo Big Archive — System Design 2025 Edition
+- *Designing Data-Intensive Applications*
+- System Design Primer
+- MIT 6.5840 / CMU 15-440 Distributed Systems
+- AWS Well-Architected / Azure Architecture Center
 
-- `learning-map` Skill：提供課綱、教材內容、互動設計與 Learning Handoff 的共用方法。
-- 自己的 private Learning Handoff：保存目前學習位置、學習證據、回饋、待確認問題與 Learner Path。
+互動方式參考 `gcake119/system-design-simulator`，但本課程使用的是簡化、可重現的教學模型；所有 simulator 數字都是 synthetic assumptions，不代表真實產品 benchmark。
 
-概念上：
+完整來源角色、使用範圍與內容驗證方式見 `docs/source-strategy.md`。
 
-```text
-本公開教材
-    ↓ Fork
-自己的教材 fork
-    ↑
-learning-map
-    ↑
-private Learning Handoff
-```
+## 本機執行
 
-Agent 可以同時讀取教材 fork 與私人 Learning Handoff，再依實際學習狀況修改自己的教材版本，例如增加補充案例、改寫說明、加入額外練習或調整學習路線。
-
-**不要把私人 Learning Handoff、個人學習紀錄或 Agent 對個人的暫時判斷 commit 到公開 fork。** 個人紀錄應保存在 private repo、本機私人檔案或其他適當的私人儲存。
-
-如果某項修改後來確認是一般學習者都可能受益的教材改善，可以先去除個人資訊，再整理成 issue 或 pull request 回饋本 repo。
-
-`learning-map`：https://github.com/gcake119/learning-map
-
-## 開源與貢獻
-
-本教材採 **MIT License** 開源。你可以 Fork、修改並建立自己的教材版本；依 MIT 條款再發布時需保留原始 copyright 與授權聲明。
-
-歡迎透過 issue / pull request 回饋可泛化的教材、互動、測試與 accessibility 改善。個人化學習修改不必全部送回 upstream；若改善來自 private Learning Handoff，請先去除個人學習紀錄與可識別資訊。
-
-詳細流程請見 `CONTRIBUTING.md`，完整授權文字請見 `LICENSE`。
-
-## 開發與部署
-
-七個單元入口各有一個流程動畫實驗：完整查詢、循環與恢復、資訊壓縮與刷新、寫入逾時、trace 取證、平行時間軸、多助手交接。動作逐步推進；實驗內可切換條件、還原上一步及重播。動畫狀態不寫入設計筆記，離開情境後重設。支援手動關閉動態及系統 reduced-motion，靜態結果與資訊完全相同。
-
-動畫內容與轉移位於 `learning/animations.mjs`，畫面為 `learning/UnitAnimation.vue`，樣式為 `learning/animation.css`。
-
-使用 Node.js 22、pnpm 11.19.0。
+需要 Node.js 22、pnpm 11.19.0。
 
 ```sh
 corepack enable
@@ -82,31 +64,18 @@ pnpm test
 pnpm build
 ```
 
-`main` 經 GitHub Actions 部署 `dist/` 至 GitHub Pages，Pages Source 必須為 GitHub Actions。
+新版入口：`#/v2`
 
-## 結構
+## 專案文件
 
-- `learning/curriculum.mjs`：課綱、結論、單元與小節目標、應用情境。
-- `learning/chapters.mjs`：案例庫、課程組合與舊書籤相容。
-- `learning/App.vue`：地圖、動作驅動情境、回到上一步及閱讀位置。
-- `learning/interaction.mjs`：動作轉移與可還原的互動狀態。
-- `learning/style.css`：紙白底、低彩度、響應式圖解。
-- `tests/chapters.test.mjs`：內容契約、書籤與單一模式驗證。
+- `docs/curriculum-proposal.md`：課綱與學習目標
+- `docs/canonical/`：Canonical Content 與 Content Review
+- `docs/source-strategy.md`：教材與參考來源
+- `docs/interaction-redesign-v0.2.md`：Simulator-linked interaction 設計
+- `docs/implementation-v2.md`：實作與 QA 狀態
 
-首頁為地圖；`#/learn/loop/1` 等 hash 網址可直接分享。閱讀位置使用 `agent-reading-position-v2` 保存，不沿用舊版評分／解鎖紀錄。刷新會重設本頁操作，保留閱讀位置。資料全部為教學假設，不連接真實 API。
+## License
 
-舊版 Slidev 與實驗控制台原始檔暫留作歷史參考，但不再建置或公開提供入口；新版以本文件及 `docs/guided-learning.md` 為準。
+MIT License。可以 Fork、修改與再發布；請保留原始授權聲明。
 
-## 具體案件設計練習
-
-設計應用改為 `learning/practice.mjs` 的七個案件任務：先看現況、執行動作、觀察文件與紀錄變化，結果後才呈現設計規則。文件選取與交接包需由學習者操作；分支沒有評分或鎖定，回退可還原每個動作。`agent-case-practice-v3` 保存可重播驗證的完整操作歷程，舊 v1 筆記與 v2 配置保留供閱讀與匯出。單元續讀入口維持開放。
-
-## 可操作的系統實驗（v4）
-
-七個單元的設計練習使用 `SystemLab.vue`：固定節點圖、點選節點設定、逐事件或自動執行、暫停、回退、重播、配置前後結果比較。`system-lab.mjs` 是確定性的教學事件模型；動畫抵達後才提交事件的狀態變化，回應遺失在途中停止。所有耗時與容量均為教學假設，沒有呼叫真實模型或工具。
-
-練習涵蓋權限路徑、檢查點恢復、資料容量與時效、結果不明與冪等、逐句證據、查詢依賴、交接契約。觀察範例提供已配置方案，修復故障及自行設計允許調整有限元件設定。v4 保存配置至 `agent-system-lab-v4`，載入後可重新執行；v1–v3 舊筆記仍可展開與下載。無分數、無鎖關、無純簡報模式。
-
-## Token Profiler 互動式簡報 prototype
-
-`prototype/token-profiler-deck` 分支新增獨立教材 `#/deck/token-profiler`。執行 `pnpm dev` 後，可直接開啟該 hash 網址；`pnpm test` 與 `pnpm build` 沿用原有指令。教材使用固定的合成資料，不呼叫模型或外部 API。既有地圖與設計工作台維持原路由。
+若修改來自私人 Learning Handoff，公開回饋或 PR 前請先移除個人資訊。
