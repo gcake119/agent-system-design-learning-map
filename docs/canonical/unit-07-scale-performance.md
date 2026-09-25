@@ -1,6 +1,6 @@
 # Unit 7 Canonical Content v0.1 — 依負載與瓶頸改善效能
 
-> 狀態：Canonical Content v0.1 方向已由使用者確認（2026-09-25）；待 subject-matter Content Review。
+> 狀態：**Content Review PASS（2026-09-25）**。Canonical Content v0.1 方向已確認；以下修訂納入 subject-matter validation。
 > 本文件定義 Unit 7 必須正確傳達的 instructional meaning；不是「高流量架構元件清單」或雲端 sizing 教學。
 
 ## Central question
@@ -309,11 +309,25 @@ Learner 應回答：
 - DDIA — Replication / Partitioning, only if actual edition / text available
 - ByteByteGo archive — system design / caching / database scaling as supplemental source
 
-## Pending validation before Content Review passes
+## Content Review — 2026-09-25
 
-1. 固定 latency / throughput / percentile 的一手來源，避免只靠 ByteByteGo 簡化圖。
-2. Replication / partitioning 的核心差異需有足夠可靠來源；若 DDIA全文不可用，改用 PostgreSQL / cloud architecture / distributed systems course 一手教材支撐。
-3. Twitter / YouTube 都明示為 synthetic teaching model，不描述真實 production architecture。
-4. Podcast workload 數字只作 synthetic range；不把使用者真實流量或成本當教材事實。
-5. Unit 7 不深入 autoscaling algorithm、consistent hashing、CAP、multi-region consensus；列延伸即可。
-6. 若加入 Little's Law / queueing formula，需另做 quantitative canonical content；v0.1 不教公式。
+### Result: PASS
+
+Unit 7 的 workload → baseline → bottleneck → intervention → re-measure 推理鏈通過內容審查。
+
+### Validation decisions
+
+1. **Latency / throughput 分開教。** Google SRE 將 latency、traffic、errors、saturation 列為核心 monitoring signals；latency 需要看 successful / failed requests 與 distribution，不只 average。Canonical Content 保留 percentile / tail 的概念，但不在 v0.1 教統計公式。
+2. **Saturation / bottleneck 必須連回 resource。** CPU、memory、I/O、connections、queue age / depth、external quota 都可能限制 workload；「慢」不是單一 architecture diagnosis。
+3. **Cache trade-off 成立。** Azure Cache-Aside 明確指出 cache / store 可能暫時不一致，expiration / eviction / invalidation / local-vs-shared cache 都會影響設計。ByteByteGo archive 只作 coverage / visual reference。
+4. **Queue / workers 的 scale boundary 延續 Unit 4。** Queue 可以 buffer burst；Competing Consumers 可以增加 processing instances，但 downstream capacity、ordering、contention、failure 仍限制 throughput。
+5. **Replication / partitioning 保持概念層。** Replication = 同一 logical data 的多 copies；partitioning = 將 data / workload 分到 partitions。用途可以重疊於 scale / availability，但 mechanisms / trade-offs 不同。v0.1 不教 leader election、consensus、consistent hashing 或 shard rebalancing algorithm。
+6. **Stateless 只描述 compute-instance property。** Business state 並未消失；它被移到 durable / shared state systems。避免「stateless architecture = system has no state」。
+7. **Synthetic cases 明示。** Twitter / video / URL shortener 不描述真實公司 production architecture；Podcast workload 只用合成範圍，不使用 private analytics。
+8. **不加入 Little's Law。** 目前 learning objective 不需要 queueing formula；若未來增加 quantitative capacity planning，再建立獨立 canonical subsection 與來源。
+
+### Remaining non-blocking work
+
+- Storyboard 的 performance comparison 必須固定 workload / correctness target，不能用不同條件的兩組數字製造「方案 B 比較快」。
+- 如果後續 Learning Copy 使用 P95 / P99 實際數值，必須標成 synthetic measurements，不暗示 benchmark。
+- Unit 8 要把 performance / observability evidence 接進 rollout decision，但不把「deployment 成功」等同 performance requirement 已通過。
