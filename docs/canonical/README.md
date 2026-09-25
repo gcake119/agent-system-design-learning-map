@@ -42,4 +42,6 @@
 
 截至 2026-09-25，Unit 1–8 的 Canonical Content v0.1 均已經使用者確認並通過各單元 subject-matter Content Review。
 
-下一個 gate 是 **cross-unit Content Review**：檢查跨章定義一致性、重複、先備順序、案例假設、來源覆蓋與 transfer progression。此 gate 通過前不進 Interaction Storyboard。
+**Cross-unit Content Review 已於 2026-09-25 PASS**，詳見 `cross-unit-content-review.md`。跨章定義、先備順序、案例重訪、transfer progression 與 AI 協作角色已核對。
+
+下一階段進入 **Interaction Storyboard**。Storyboard 必須遵守 cross-unit review 的白話文案與術語規則；尚未修改 production UI。
