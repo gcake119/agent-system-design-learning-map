@@ -1,6 +1,6 @@
 # Unit 8 Canonical Content v0.1 — 安全交付版本，維持資料與服務相容
 
-> 狀態：Canonical Content v0.1 方向已由使用者確認（2026-09-25）；待 subject-matter Content Review。
+> 狀態：**Content Review PASS（2026-09-25）**。Canonical Content v0.1 方向已確認；以下修訂納入 subject-matter validation。
 > 本文件定義 Unit 8 必須正確傳達的 instructional meaning；不是 GitHub Actions、Docker、Kubernetes、Terraform 或特定雲端部署教學。
 
 ## Central question
@@ -319,11 +319,26 @@ Learner 應推演：
 - OWASP Secrets Management Cheat Sheet
 - ByteByteGo archive — CI/CD / deployment visual coverage, supplemental only
 
-## Pending validation before Content Review passes
+## Content Review — 2026-09-25
 
-1. 固定 Continuous Integration / Delivery / Deployment 的來源與用詞，避免不同 vendor 定義混用。
-2. 核實 canary / blue-green / rolling 的 trade-offs，不把特定 platform implementation 當通用定義。
-3. 找可靠來源支持 expand / migrate / contract 的 staged database change；若來源不足，改寫為一般 compatibility sequence，不命名 pattern。
-4. 核實 build-once / artifact promotion 的 supply-chain / delivery rationale。
-5. Secrets management 要避免把 Twelve-Factor 的 config guidance誤教成完整 secrets security。
-6. Transfer 的 multi-repo topology 只作 synthetic case，不描述真實 production deployment details。
+### Result: PASS
+
+Unit 8 的 change impact → compatibility → artifact / migration → bounded rollout → evidence → rollback / forward-fix 推理鏈通過內容審查。
+
+### Validation decisions
+
+1. **CI / Continuous Delivery / Continuous Deployment 用詞固定為概念層。** CI = 頻繁整合並以 automated build / tests / checks 提供 feedback；Continuous Delivery = software 維持可隨時部署、production release 可有 decision gate；Continuous Deployment = 通過 pipeline 的 change 自動 release / deploy to production。教材會提醒不同組織工具的 UI 名稱可能不同。
+2. **Artifact promotion 保留但不教成 container-only。** Build output 必須可識別／version；相同 artifact promotion 可降低 environment-specific rebuild drift。Runtime config / secrets 與 artifact 分離，但具體 supply-chain signing / provenance 不進 v0.1。
+3. **Database change 採一般 staged compatibility reasoning。** 保留 expand → transition / backfill → verify → contract 的教學模型，但不宣稱它是每次 migration 的唯一 pattern。核心是 old/new code 與 schema coexistence。
+4. **Canary / rolling / blue-green 都是 blast-radius / rollout strategies，不是 correctness guarantees。** Canary 需要 representative traffic 與可判讀 signals；blue-green 仍可能共享 database / external state；rolling 需要版本 coexistence。
+5. **Rollback scope 必須命名。** Code / traffic / config rollback 與 data restore / reverse migration 不同；external effects 可能只能 forward fix / compensate。這與 Unit 5 的 recovery model一致。
+6. **Deployment verification 必須含 business evidence。** Process healthy / readiness passing 只證明局部 technical condition；是否 promotion 仍需依 risk 看 error、latency、business state、migration、security / authorization 等 signals。
+7. **Secrets management 不以 environment variable 作完整答案。** OWASP Secrets Management 支持 central management、least privilege、rotation、auditing、lifecycle；env var 只是可能 delivery mechanism，而且可能有 exposure risk。
+8. **Human approval 可以是 pipeline control。** 課程不把「完全無人」當 CI/CD 成熟度指標；目標是 repeatable、observable、auditable、bounded change。
+9. **Multi-repo transfer 保持 synthetic。** 不使用真實 production config、secret、government data 或未公開 deployment topology。
+
+### Remaining non-blocking work
+
+- 若後續 Learning Copy 要列 GitHub Actions / Argo / Kubernetes 等具體工具，必須清楚標成 implementation example，不讓工具名稱取代概念。
+- Storyboard 的 migration animation 必須同時顯示 old/new app coexistence，避免畫成單一步驟「DB migrate → deploy」。
+- 全課 Content Review 要再檢查 Unit 6 verification 與 Unit 8 deployment evidence 是否重複，以及 Unit 3 state migration / Unit 8 schema migration 的責任邊界。
