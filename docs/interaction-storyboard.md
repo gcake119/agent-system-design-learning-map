@@ -1,7 +1,7 @@
 # Interaction Storyboard v0.1
 
 > 日期：2026-09-25
-> 狀態：Draft，等待使用者確認互動方向
+> 狀態：**Working storyboard accepted（2026-09-25）**。使用者授權依目前學習程度與既定 learning-map 流程自行完成後續 Learning Copy / Implementation / QA；實際使用後再依學習回饋迭代。
 > 前置 gate：Curriculum confirmed；Unit 1–8 Canonical Content + Cross-unit Content Review PASS
 > 本文件只定義學習互動與可觀察狀態，不是 Learning Copy，也不修改 production UI。
 
@@ -516,3 +516,19 @@ Learner 不會看到「這是 Unit 3 題」之類提示。
 - 最終視覺風格。
 
 Storyboard 確認前不修改 production UI。
+
+
+## 12. Decision authority / iteration policy
+
+2026-09-25 使用者確認：Storyboard 已細到難以在尚未實際學習前判斷每個互動是否適合，因此後續不再要求逐 stage 人工確認。
+
+執行原則：
+
+- 以已確認的 curriculum、Canonical Content、cross-unit Content Review 與本 storyboard 作 working baseline；
+- 依學習者目前程度，優先降低一次引入的抽象概念數，使用白話、具體狀態變化與案例比較；
+- 專有名詞第一次出現必須定義，不假設熟悉 distributed systems / DevOps / database theory；
+- 可以在 Learning Copy / Implementation 階段調整 screen 數、互動節奏、提示與案例細節，只要不改變 canonical instructional meaning；
+- 若 implementation 發現互動無法正確呈現機制，可回修 storyboard；若發現 subject-matter 問題，回修 Canonical Content；
+- 不因「已確認 storyboard」而凍結 learning copy；
+- 第一版目標是形成可實際學習的完整課程，再以 Human Learning Review / learner feedback 修正；
+- 實際使用後，優先記錄「哪裡看不懂、名詞太快、操作不知道要做什麼、案例無法 transfer」，不以 clicks / completion time 當理解程度的代理指標。
