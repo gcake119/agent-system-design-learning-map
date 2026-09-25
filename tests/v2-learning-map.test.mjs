@@ -1,3 +1,4 @@
+import {lessonLabs,labFor} from '../learning/v2/sim/lesson-labs.mjs';
 import {simulateRequirements} from '../learning/v2/sim/models/requirements.mjs';
 import {simulateBoundaries} from '../learning/v2/sim/models/boundary.mjs';
 import {simulateEvidence} from '../learning/v2/sim/models/evidence.mjs';
@@ -40,3 +41,6 @@ test('requirement changes alter downstream design concerns before choosing compo
 test('changing booking semantics changes the rule being protected',()=>{const assigned=simulateRequirements({seatModel:'assigned'});const general=simulateRequirements({seatModel:'general'});assert.notEqual(assigned.rule,general.rule);});
 test('service boundaries make coordination cost visible',()=>{const mono=simulateBoundaries({layout:'modular'});const services=simulateBoundaries({layout:'services'});assert.ok(services.deployUnits>mono.deployUnits);assert.ok(services.crossBoundaryCalls>mono.crossBoundaryCalls);});
 test('unsafe shared writes and client-only authorization surface distinct boundary risks',()=>{const r=simulateBoundaries({layout:'modular',directDbWrite:true,clientAuthOnly:true});assert.ok(r.sharedWrites>0);assert.ok(r.risks.some(x=>x.includes('資料')));assert.ok(r.risks.some(x=>x.includes('client')));});
+
+test('every learner-facing stage is backed by a persistent simulator lab',()=>{for(const unit of units){for(const stage of unit.stages){const lab=labFor(unit.id,stage.id);assert.ok(lab,`missing lab for ${unit.id}/${stage.id}`);assert.ok(lab.component);assert.ok(lab.focus);assert.ok(lab.note.length>12);}}});
+test('each unit keeps one simulation model across its stages',()=>{for(const unit of units){const components=new Set(unit.stages.map(stage=>labFor(unit.id,stage.id).component));assert.equal(components.size,1,`${unit.id} switches simulation model mid-unit`);}});
