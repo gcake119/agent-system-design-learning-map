@@ -1,6 +1,6 @@
 # Unit 2 Canonical Content v0.1 — 劃清系統邊界、責任與契約
 
-> 狀態：Draft，待使用者確認與 Content Review。
+> 狀態：Canonical Content v0.1 已由使用者確認（2026-09-25）；待 subject-matter Content Review。
 > 本文件定義 Unit 2 必須正確傳達的 instructional meaning；不是 UI、互動或 API 設計規範。
 
 ## Central question
