@@ -61,3 +61,30 @@ Unit 1–8 + integrated transfer 完成後再跑完整矩陣。
 
 ### Human Learning Review
 第一版可實際學習後才開始；記錄看不懂、術語太快、操作意圖不清、transfer 卡住的位置。
+
+
+## First end-to-end implementation checkpoint — 2026-09-25
+
+已完成 learner-facing first pass：
+
+- Unit 1–8 都有至少三個可操作 stages；
+- Unit 1–8 皆包含 transfer stage；
+- final integrated transfer 已實作五個逐步事故；
+- v2 使用獨立 `#/v2` route，不覆蓋 legacy UI；
+- first-use terminology 有 plain-language definition；
+- automated tests 已加入完整 unit coverage、transfer presence、final route、term definition checks。
+
+### 下一步：local execution + interaction / visual QA
+
+GitHub connector 可以提交程式與檢查 repository state，但本階段需要實際：
+
+1. checkout `learning-map-v2`；
+2. `pnpm install --frozen-lockfile`（若 lockfile 已一致）；
+3. `pnpm test`；
+4. `pnpm build`；
+5. 啟動 dev server，逐路由檢查 `#/v2`；
+6. desktop / mobile / keyboard / reduced-motion QA；
+7. 檢查 Vue template compile、direct-route fallback、GitHub Pages base path；
+8. 依實際畫面修正互動密度與視覺層級。
+
+這是適合交接 Codex 的 checkpoint；QA findings 回寫本文件，再決定是否 merge / replace legacy route。
