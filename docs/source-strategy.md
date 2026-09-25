@@ -223,6 +223,6 @@ Canonical Content 應記錄來源名稱、實際版本／commit／學期、章�
 11. Technical QA
 12. Human learning review
 
-目前進度：已形成 [課綱重建提案 v0.1](curriculum-proposal.md)，停在 **Curriculum Confirmation Gate**。該文件包含 Subject Model 對照、三篇八單元、learning objectives、舊教材處理建議與本輪來源核讀範圍。
+目前進度：使用者已於 2026-09-25 確認 [課綱重建提案 v0.2](curriculum-proposal.md)，**Curriculum Confirmation Gate 已通過**。三篇八單元、案例策略與 transfer 策略成為 working curriculum。
 
-課綱仍待使用者確認；未開始 Canonical Content、互動分鏡、畫面文案或實作。
+目前進入 **Canonical Content**。先建立逐單元 content brief 與 claim-level source mapping，再進行 Content Review；尚未進入互動分鏡、畫面文案或實作。
