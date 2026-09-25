@@ -12,6 +12,36 @@
 
 `#/design` 為互動設計工作台：每單元以兩組選擇與兩種試驗情境操作動畫，演練後自動產生方案、結果、代價與重新評估條件。按「採用這個設計」才保存；文字補充為選填。可下載已採用的七份草稿，舊版文字筆記保留供查看及匯出。資料只存於目前瀏覽器，不會傳到伺服器。
 
+
+## 使用方式：直接學習或 Fork 成自己的教材
+
+這份公開教材可以直接使用，不需要先安裝 `learning-map` Skill，也不需要建立個人學習紀錄。
+
+如果希望讓 Agent 根據自己的學習狀況持續調整教材，可以 Fork 本 repo，搭配：
+
+- `learning-map` Skill：提供課綱、教材內容、互動設計與 Learning Handoff 的共用方法。
+- 自己的 private Learning Handoff：保存目前學習位置、學習證據、回饋、待確認問題與 Learner Path。
+
+概念上：
+
+```text
+本公開教材
+    ↓ Fork
+自己的教材 fork
+    ↑
+learning-map
+    ↑
+private Learning Handoff
+```
+
+Agent 可以同時讀取教材 fork 與私人 Learning Handoff，再依實際學習狀況修改自己的教材版本，例如增加補充案例、改寫說明、加入額外練習或調整學習路線。
+
+**不要把私人 Learning Handoff、個人學習紀錄或 Agent 對個人的暫時判斷 commit 到公開 fork。** 個人紀錄應保存在 private repo、本機私人檔案或其他適當的私人儲存。
+
+如果某項修改後來確認是一般學習者都可能受益的教材改善，可以先去除個人資訊，再整理成 issue 或 pull request 回饋本 repo。
+
+`learning-map`：https://github.com/gcake119/learning-map
+
 ## 開發與部署
 
 七個單元入口各有一個流程動畫實驗：完整查詢、循環與恢復、資訊壓縮與刷新、寫入逾時、trace 取證、平行時間軸、多助手交接。動作逐步推進；實驗內可切換條件、還原上一步及重播。動畫狀態不寫入設計筆記，離開情境後重設。支援手動關閉動態及系統 reduced-motion，靜態結果與資訊完全相同。
