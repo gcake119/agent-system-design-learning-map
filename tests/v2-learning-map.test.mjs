@@ -1,3 +1,5 @@
+import {simulateRequirements} from '../learning/v2/sim/models/requirements.mjs';
+import {simulateBoundaries} from '../learning/v2/sim/models/boundary.mjs';
 import {simulateEvidence} from '../learning/v2/sim/models/evidence.mjs';
 import {simulateRollout} from '../learning/v2/sim/models/rollout.mjs';
 import {simulateQueue} from '../learning/v2/sim/models/queue.mjs';
@@ -33,3 +35,8 @@ test('verification before retry reduces blind retry candidates and provider load
 test('evidence views expose different slices of the same failure',()=>{const log=simulateEvidence({failure:'worker-crash',view:'log'});const trace=simulateEvidence({failure:'worker-crash',view:'trace'});const state=simulateEvidence({failure:'worker-crash',view:'state'});assert.notDeepEqual(log.items,trace.items);assert.match(trace.items.join(' '),/Worker/);assert.match(state.items.join(' '),/artifact = missing/);});
 test('rollout limits exposure but cannot repair incompatibility',()=>{const ten=simulateRollout({rollout:10,compatibility:false,schema:'expanded'});const full=simulateRollout({rollout:100,compatibility:false,schema:'expanded'});assert.ok(ten.affectedTraffic>0);assert.ok(full.blastRadius>ten.blastRadius);assert.equal(full.canPromote,false);});
 test('contracting schema while old version exists makes rollback unsafe',()=>{const safe=simulateRollout({rollout:50,compatibility:true,schema:'expanded'});const unsafe=simulateRollout({rollout:50,compatibility:true,schema:'contracted'});assert.equal(safe.rollbackSafe,true);assert.equal(unsafe.rollbackSafe,false);assert.ok(unsafe.incompatibleOldTraffic>0);});
+
+test('requirement changes alter downstream design concerns before choosing components',()=>{const simple=simulateRequirements({seatModel:'general'});const complex=simulateRequirements({seatModel:'assigned',flashSale:true,hold:true,cancellation:true});assert.ok(complex.questions.find(q=>q.id==='concurrency').level>simple.questions.find(q=>q.id==='concurrency').level);assert.ok(complex.questions.find(q=>q.id==='state').level>simple.questions.find(q=>q.id==='state').level);});
+test('changing booking semantics changes the rule being protected',()=>{const assigned=simulateRequirements({seatModel:'assigned'});const general=simulateRequirements({seatModel:'general'});assert.notEqual(assigned.rule,general.rule);});
+test('service boundaries make coordination cost visible',()=>{const mono=simulateBoundaries({layout:'modular'});const services=simulateBoundaries({layout:'services'});assert.ok(services.deployUnits>mono.deployUnits);assert.ok(services.crossBoundaryCalls>mono.crossBoundaryCalls);});
+test('unsafe shared writes and client-only authorization surface distinct boundary risks',()=>{const r=simulateBoundaries({layout:'modular',directDbWrite:true,clientAuthOnly:true});assert.ok(r.sharedWrites>0);assert.ok(r.risks.some(x=>x.includes('資料')));assert.ok(r.risks.some(x=>x.includes('client')));});
