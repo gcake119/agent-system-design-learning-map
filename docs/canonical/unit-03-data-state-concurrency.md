@@ -1,6 +1,6 @@
 # Unit 3 Canonical Content v0.1 — 讓資料與狀態在併發下仍然正確
 
-> 狀態：Draft，待使用者確認與 Content Review。
+> 狀態：Canonical Content v0.1 方向已由使用者確認（2026-09-25）；待 subject-matter Content Review。
 > 本文件定義 Unit 3 必須正確傳達的 instructional meaning；不是 database tutorial、SQL 教學或 UI 規格。
 
 ## Central question
