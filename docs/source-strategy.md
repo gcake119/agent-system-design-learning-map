@@ -171,13 +171,25 @@ AI Agent 在本課程中用來協助學習者理解問題、整理需求、提�
 
 除內容來源外，同時參考其圖解、架構圖與資訊視覺化方式。
 
-### System Design Simulator
+### System Design Simulator — 本次實作直接參考版本
 
-來源：https://github.com/vijaygupta18/system-design-simulator
+來源：https://github.com/gcake119/system-design-simulator
 
 角色：`Presentation / Interaction reference`
 
-只參考互動、模擬與操作方式，不作為 subject-matter correctness 的主要依據。
+用途：
+
+- architecture canvas 作為 learning surface；
+- learner 改變 workload、component、connection 或 policy 後重新計算 system state；
+- per-node utilization / latency / bottleneck 等 consequence visualization；
+- scenario controls、metrics 與 trade-off 同畫面連動；
+- 讓「設計選擇 → 系統參數／元件 → 可觀察結果」形成直接因果關係。
+
+本課程**不直接複製**該專案的 interview scoring、Architect Level、完整 component palette 或 benchmark 數字。課程 simulation 使用較小、deterministic、synthetic 的教學模型，只模擬各單元真正需要理解的關係。
+
+本來源只支持 presentation / interaction design；System Design subject-matter correctness 仍回到本文件第一、二層來源與 Canonical Content。
+
+歷史討論曾參考 upstream / 類似 simulator 專案；目前 v2 interaction redesign 的直接實作參考以 `gcake119/system-design-simulator` 為準。
 
 ### 使用者提供的 BDD 線上課程目錄
 
@@ -223,6 +235,15 @@ Canonical Content 應記錄來源名稱、實際版本／commit／學期、章�
 11. Technical QA
 12. Human learning review
 
-目前進度：使用者已於 2026-09-25 確認 [課綱重建提案 v0.2](curriculum-proposal.md)，**Curriculum Confirmation Gate 已通過**。三篇八單元、案例策略與 transfer 策略成為 working curriculum。
+目前進度（2026-09-26）：
 
-目前進入 **Canonical Content**。先建立逐單元 content brief 與 claim-level source mapping，再進行 Content Review；尚未進入互動分鏡、畫面文案或實作。
+- Curriculum Confirmation Gate：PASS。
+- Unit 1–8 Canonical Content：完成。
+- Unit-level Content Review：PASS。
+- Cross-unit Content Review：PASS。
+- Interaction Storyboard / Learning Copy：完成 working version。
+- Interaction 已依 learner feedback 重構為 simulator-linked learning，詳見 `interaction-redesign-v0.2.md`。
+- `learning-map-v2` 已完成八單元 simulator、progressive controls、domain transfer 與 Final Integrated Transfer 的主要實作。
+- 下一 gate：Technical QA → Human Learning Review。
+
+來源角色與內容正確性 gate 不因 implementation 進度而改變。
