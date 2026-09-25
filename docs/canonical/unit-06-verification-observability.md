@@ -1,6 +1,6 @@
 # Unit 6 Canonical Content v0.1 — 驗證行為，觀察與定位問題
 
-> 狀態：Canonical Content v0.1 方向已由使用者確認（2026-09-25）；待 subject-matter Content Review。
+> 狀態：**Content Review PASS（2026-09-25）**。Canonical Content v0.1 方向已確認；以下修訂納入 subject-matter validation。
 > 本文件定義 Unit 6 必須正確傳達的 instructional meaning；不是特定 testing framework、APM 或 observability vendor 教學。
 
 ## Central question
@@ -275,11 +275,25 @@ Learner 應建立 evidence chain：
 - Cucumber BDD / Examples
 - suitable primary / authoritative software testing source for test-scope claims
 
-## Pending validation before Content Review passes
+## Content Review — 2026-09-25
 
-1. 固定 OpenTelemetry 對 trace / metric / log 的定義，避免把某 vendor UI behavior 當通用概念。
-2. 找到足夠可靠且 framework-neutral 的 testing source；若 taxonomy 各家用詞不同，Canonical Content 保留 scope-based teaching 而不宣稱唯一分類。
-3. 核實 telemetry privacy / secrets / PII guidance。
-4. SLI / SLO 若要進核心，需增加 Google SRE / reliability 一手來源；v0.1 暫以 acceptance / target 一般概念處理。
-5. Unit 6 不把 CI/CD pipeline 本身當 verification；CI 是執行 tests / checks 的 delivery mechanism，Unit 8再處理。
-6. AI judge 只作 boundary / optional collaboration content，不回到舊版 Agent evaluation 主線。
+### Result: PASS
+
+Unit 6 的 requirement → mechanism → verification → production evidence → feedback loop 通過內容審查。
+
+### Validation decisions
+
+1. **OpenTelemetry 作 vendor-neutral telemetry terminology source。** Traces 表示 request / operation 經過 distributed system 的 path；metrics 是 runtime measurements；logs 是 event records。Canonical Content 不綁定任何 APM UI。
+2. **Testing taxonomy 保持 scope-based。** 不宣稱 unit / component / integration / E2E 在所有團隊都有唯一名稱或固定大小；教學重點是 test 穿過哪些 boundaries、使用哪些 real / fake dependencies、還有哪些 behavior 未被涵蓋。
+3. **Passing tests 的 claim 保持 evidence scope。** Test result 支持「在指定 code / config / environment / fixtures / assertions 下觀察到的 behavior」；不提升成 production correctness proof。
+4. **Telemetry security / privacy 進核心。** OWASP logging guidance 明確警告 access tokens、passwords、sensitive PII、secrets 等不應直接記錄，並要求 log access / transport / storage protection。Canonical Content 的 minimization / redaction / access / retention 方向成立。
+5. **Observability 與 acceptance 分工成立。** OpenTelemetry 定義 signals；Azure / AWS operational guidance 支持使用 telemetry 理解 system behavior。是否「好／壞」仍由 requirement / target / business rule 決定。
+6. **SLI / SLO 暫不成為 Unit 6 核心術語。** v0.1 只使用 measurable target / acceptance；若後續需要 reliability objective，另加入 Google SRE 等一手來源。
+7. **CI 不等於 verification。** CI 可以執行 tests / static checks / builds，但 evidence 的意義來自具體 check；Unit 8 再處理 CI/CD pipeline。
+8. **AI judge 保持 optional。** 一般 System Design verification 不要求 LLM evaluation；若語意品質需要模型協助，仍需 criteria / calibration / human evidence，不能取代 requirement。
+
+### Remaining non-blocking work
+
+- Storyboard 若視覺化 logs / metrics / traces，要用同一 synthetic operation 讓 learner 看見三種 signal 的不同問題，而不是三張工具 dashboard。
+- 若加入 distributed tracing sampling / context propagation 的細節，需再引用 OpenTelemetry specification 對應章節。
+- Unit 8 需要把 test / verification evidence 接到 build → artifact → deploy → rollout / rollback。
