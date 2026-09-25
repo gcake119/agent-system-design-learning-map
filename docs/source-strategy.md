@@ -16,9 +16,13 @@
 
 ### ByteByteGo / System Design 教材
 
+官方公開頁面：https://blog.bytebytego.com/p/free-system-design-pdf-158-pages
+
 角色：`Source-informed + Presentation reference`
 
-使用者提供的檔案：`Bytebytego_Big_Archive_System_Design_2025.pdf`。本專案也曾出現帶 `(1)` 的同名檔；本輪檢索以未帶括號的檔案為依據。不能只依品牌將此檔視為 Alex Xu 任一本付費書的特定版本。
+使用者提供的檔案：`Bytebytego_Big_Archive_System_Design_2025.pdf`。ByteByteGo 官方公開頁目前將下載項目標示為 **“Big Archive 2025 Edition” / “Bytebytego Big Archive System Design 2025”**，因此本專案可把使用者提供的同名 PDF 記錄為這份官方公開 Big Archive 2025 Edition 的本地教材副本；若後續檔案 hash / 頁數與官方下載內容不一致，再另行註記版本差異。
+
+此來源不是只依 ByteByteGo 品牌推定的某本付費書版本；來源追溯以官方公開 PDF 頁面與實際檔案為準。
 
 用途：
 
