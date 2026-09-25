@@ -27,12 +27,19 @@
 | Unit | Canonical Content | Content Review |
 | --- | --- | --- |
 | 1 行為與限制 | confirmed v0.1 | **PASS — 2026-09-25** |
-| 2 邊界、責任與契約 | draft v0.1 | pending |
-| 3 資料、狀態與併發 | pending | pending |
-| 4 順序、等待與交接 | pending | pending |
-| 5 失敗、重複與恢復 | pending | pending |
-| 6 驗證、觀測與定位 | pending | pending |
-| 7 負載與瓶頸 | pending | pending |
-| 8 交付、相容與演進 | pending | pending |
+| 2 邊界、責任與契約 | confirmed v0.1 | **PASS — 2026-09-25** |
+| 3 資料、狀態與併發 | confirmed v0.1 | **PASS — 2026-09-25** |
+| 4 順序、等待與交接 | confirmed v0.1 | **PASS — 2026-09-25** |
+| 5 失敗、重複與恢復 | confirmed v0.1 | **PASS — 2026-09-25** |
+| 6 驗證、觀測與定位 | confirmed v0.1 | **PASS — 2026-09-25** |
+| 7 負載與瓶頸 | confirmed v0.1 | **PASS — 2026-09-25** |
+| 8 交付、相容與演進 | confirmed v0.1 | **PASS — 2026-09-25** |
 
 只有 Canonical Content 與 Content Review 完成後，才進 Interaction Storyboard。
+
+
+## Unit-level gate status
+
+截至 2026-09-25，Unit 1–8 的 Canonical Content v0.1 均已經使用者確認並通過各單元 subject-matter Content Review。
+
+下一個 gate 是 **cross-unit Content Review**：檢查跨章定義一致性、重複、先備順序、案例假設、來源覆蓋與 transfer progression。此 gate 通過前不進 Interaction Storyboard。
