@@ -1,5 +1,5 @@
 import {useLabSession,resetLabSession,snapshotLabSession} from '../learning/v2/sim/session.mjs';
-import {lessonLabs,labFor} from '../learning/v2/sim/lesson-labs.mjs';
+import {lessonLabs,labFor,focusControls} from '../learning/v2/sim/lesson-labs.mjs';
 import {simulateRequirements} from '../learning/v2/sim/models/requirements.mjs';
 import {simulateBoundaries} from '../learning/v2/sim/models/boundary.mjs';
 import {simulateEvidence} from '../learning/v2/sim/models/evidence.mjs';
@@ -49,3 +49,7 @@ test('each unit keeps one simulation model across its stages',()=>{for(const uni
 test('unit lab session survives stage navigation because state is unit-scoped',()=>{resetLabSession('failure');const first=useLabSession('failure');first.retries=3;first.idempotency=true;const nextStage=useLabSession('failure');assert.equal(nextStage.retries,3);assert.equal(nextStage.idempotency,true);});
 test('unit lab sessions remain isolated from each other',()=>{resetLabSession('concurrency');resetLabSession('scale');useLabSession('concurrency').writers=5;assert.equal(useLabSession('scale').rps,1000);assert.equal(snapshotLabSession('concurrency').writers,5);});
 test('lab reset restores the experiment baseline',()=>{const s=useLabSession('async');s.workers=4;s.asyncMode=true;resetLabSession('async');assert.deepEqual(snapshotLabSession('async'),{arrival:800,workerRate:400,workers:1,asyncMode:false});});
+
+test('lesson controls are progressively disclosed instead of front-loading the whole unit',()=>{assert.deepEqual(focusControls.failure.timeout,['timeout rate']);assert.ok(focusControls.failure.retry.length>focusControls.failure.timeout.length);assert.ok(focusControls.failure.safety.length>focusControls.failure.retry.length);assert.deepEqual(focusControls.scale.workload,['scenario','traffic']);assert.ok(focusControls.scale.intervention.includes('architecture'));});
+test('early concurrency stage hides protection mechanism until learner observes the race',()=>{assert.deepEqual(focusControls.concurrency.writers,['同時 writers']);assert.ok(focusControls.concurrency.mechanism.includes('寫入保護'));});
+test('rollout lesson does not expose schema control before coexistence is observed',()=>{assert.deepEqual(focusControls.evolution.coexist,['rollout']);assert.ok(focusControls.evolution.schema.includes('schema'));});
