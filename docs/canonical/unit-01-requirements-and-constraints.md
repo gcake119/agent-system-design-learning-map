@@ -1,6 +1,6 @@
 # Unit 1 Canonical Content v0.1 — 從工作情境定義行為與限制
 
-> 狀態：Canonical Content v0.1 已由使用者確認（2026-09-25）；待 subject-matter Content Review。
+> 狀態：**Content Review PASS（2026-09-25）**。Canonical Content v0.1 已確認；以下修訂納入來源核對結果。
 > 本文件定義 Unit 1 必須保留的 instructional meaning；不是投影片文案，也不指定互動形式。
 
 ## Central question
@@ -245,9 +245,33 @@ Transfer 成功的標準不是問題清單與範例完全相同，而是能辨�
 - AWS Well-Architected Framework, Operational Excellence
 - User-provided `Bytebytego_Big_Archive_System_Design_2025.pdf`
 
-## Pending validation before Content Review passes
+## Content Review — 2026-09-25
 
-1. 固定 Azure Design Principles 實際引用頁與更新日期，避免只引用聚合頁。
-2. 對 ByteByteGo archive 中 NFR / System Design Topic Map 的教學簡化做交叉檢查；它是 source-informed，不是唯一權威。
-3. Canonical Content 若加入 SLA / SLO、RTO / RPO 的精確定義與量化方法，再增加 SRE / cloud reliability 的一手來源；v0.1 暫不教其公式與正式計算。
-4. Unit 1 不提前教 transaction、locking、queue 等機制；若 Content Review 發現 prerequisite 不足，只補理解 Unit 1 所需的最小背景。
+### Result: PASS
+
+逐項核對 C1–C7、案例、misconceptions 與 transfer boundary 後，沒有發現需要改變 Unit 1 learning objectives 或課綱範圍的 material issue。
+
+### Verified
+
+- Cucumber 官方 BDD 文件把 BDD 定義為跨角色協作、以具體 real-world examples 建立 shared understanding，並明確指出 BDD 不等於只使用 Cucumber。
+- Cucumber Example Mapping 明確分開 story、rules / acceptance criteria、examples、questions / assumptions，支持 C2 與「未知事項可見化」。
+- Cucumber Examples 明確建議 examples 要 concrete、使用 domain 資訊，而且避免 technical details，支持 C3。
+- Azure `Build for business needs` 明確要求 design decision 由 business requirement 支持，並同時考慮 functional / nonfunctional requirements、traffic、outage tolerance、RTO/RPO、cost 與 operational cost，支持 C1、C4。
+- Azure Design Principles 把 business needs、failure、scale、operations、evolution 放在同一組 architecture principles，支持 C4、C6。
+- AWS Security Design Principles 明確包含 least privilege、traceability、defense in depth、data classification / protection 與 incident preparation，支持 C6。
+- AWS Operational Excellence 把 business outcomes、observability、failure anticipation、operations feedback 與持續演進連在一起，支持「operations 不是實作完成後才考慮」。
+
+### Clarifications added by review
+
+1. **Invariant 用語收斂**：Unit 1 可以讓學習者辨認「在特定 scope 下必須維持的業務規則」，但正式 invariant 的機制與 concurrency implication 留到 Unit 3。不能把所有 acceptance criteria 都稱為 invariant。
+2. **NFR 不教成固定 checklist**：不同 flow 可以有不同 availability、latency、consistency 與 recovery requirements；Unit 1 的目的在於找出會改變設計的 constraints。
+3. **RTO / RPO / SLA / SLO**：本單元只把它們當作「需求可以被具體化」的例子，不教公式、正式治理或 reliability engineering 細節；需要深入時另在後續 canonical content 加一手來源。
+4. **Booking rule 是 synthetic assumption**：容量一、不可重疊、hold timeout 等都必須在案例中明示，不能當作所有 booking system 的 domain truth。
+5. **URL Shortener 是 comparison case，不是完整 reference architecture**：Unit 1 只用它顯示 constraints 不同會改變 design questions。
+6. **AI role 是本課程的 instructional policy**：C7 不是宣稱 Cucumber / Azure / AWS 定義 AI 的角色；其 subject-matter grounding 由第三層 AI sources 在後續 AI collaboration content 中另行驗證。
+
+### Remaining non-blocking work
+
+- ByteByteGo archive 的 System Design Topic Map 可保留作 coverage reference；Unit 1 的核心主張已由 Cucumber、Azure、AWS 官方來源交叉支持，因此不需要把 archive 的簡化表述升格成權威定義。
+- Canonical Content 若後續加入正式 reliability targets、capacity estimation 公式或 threat modeling 方法，需另做相應來源核讀。
+- Interaction Storyboard 階段仍需檢查畫面是否把 question / assumption 誤呈現為 confirmed requirement。
