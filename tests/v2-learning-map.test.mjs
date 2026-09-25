@@ -1,4 +1,5 @@
-import {useLabSession,resetLabSession,snapshotLabSession} from '../learning/v2/sim/session.mjs';
+import {useLabSession,resetLabSession,snapshotLabSession,applyTransferBaseline} from '../learning/v2/sim/session.mjs';
+import {transferFor} from '../learning/v2/sim/transfers.mjs';
 import {lessonLabs,labFor,focusControls} from '../learning/v2/sim/lesson-labs.mjs';
 import {simulateRequirements} from '../learning/v2/sim/models/requirements.mjs';
 import {simulateBoundaries} from '../learning/v2/sim/models/boundary.mjs';
@@ -53,3 +54,7 @@ test('lab reset restores the experiment baseline',()=>{const s=useLabSession('as
 test('lesson controls are progressively disclosed instead of front-loading the whole unit',()=>{assert.deepEqual(focusControls.failure.timeout,['timeout rate']);assert.ok(focusControls.failure.retry.length>focusControls.failure.timeout.length);assert.ok(focusControls.failure.safety.length>focusControls.failure.retry.length);assert.deepEqual(focusControls.scale.workload,['scenario','traffic']);assert.ok(focusControls.scale.intervention.includes('architecture'));});
 test('early concurrency stage hides protection mechanism until learner observes the race',()=>{assert.deepEqual(focusControls.concurrency.writers,['同時 writers']);assert.ok(focusControls.concurrency.mechanism.includes('寫入保護'));});
 test('rollout lesson does not expose schema control before coexistence is observed',()=>{assert.deepEqual(focusControls.evolution.coexist,['rollout']);assert.ok(focusControls.evolution.schema.includes('schema'));});
+
+test('every unit has a domain transfer profile with visible assumptions',()=>{for(const unit of units){const t=transferFor(unit.id);assert.ok(t,`missing transfer for ${unit.id}`);assert.ok(t.system.length>=4);assert.ok(t.assumptions.length>=2);assert.ok(t.prompt.length>20);}});
+test('transfer baseline changes domain conditions without leaking state to another unit',()=>{resetLabSession('failure');resetLabSession('scale');applyTransferBaseline('failure');const failure=snapshotLabSession('failure');assert.equal(failure.timeoutRate,.08);assert.equal(failure.retries,0);assert.equal(snapshotLabSession('scale').preset,'url');});
+test('transfer profiles use user-experienced cases only as transfer, not as canonical answer labels',()=>{assert.match(transferFor('scale').title,/Podcast/);assert.match(transferFor('failure').title,/自動發文/);assert.match(transferFor('async').title,/VocaScript/);});
