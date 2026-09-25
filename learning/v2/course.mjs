@@ -66,8 +66,44 @@ export const units=[
 {id:'transfer',eyebrow:'Transfer 練習',title:'按下「發表」後 timeout',intro:'Browser automation 點下發表後沒有看到成功頁面。平台是否已經接受操作，目前不知道。',prompt:'下一步先做什麼？',options:[
 {label:'找文章 ID、公開列表或後台狀態，先查證是否已發表',feedback:'先找 authoritative evidence，再決定 retry。若平台的重複操作語意未知，就不能假設重按一定安全。'},
 {label:'馬上再按一次發表',feedback:'這是在 unknown outcome 下直接重做有副作用的操作，可能產生重複結果。'}]}]},
-{id:'evidence',number:6,title:'我憑什麼說做到了？',summary:'先問要證明什麼，再選 test、log、metric 或 trace。',stages:[]},
-{id:'scale',number:7,title:'到底是哪裡撐不住？',summary:'先找 workload 和瓶頸，再加入有理由的複雜度。',stages:[]},
-{id:'evolution',number:8,title:'新版怎麼換上去，舊東西才不會壞？',summary:'把改版看成 code、contract、data 和 traffic 的一段轉換過程。',stages:[]}];
+{id:'evidence',number:6,title:'我憑什麼說做到了？',summary:'先問要證明什麼，再選 test、log、metric 或 trace。',stages:[
+{id:'scope',eyebrow:'證據有範圍',title:'API 回 200，能證明什麼？',intro:'同一筆訂單還牽涉資料庫、付款、通知與權限。HTTP response 只看得到其中一部分。',prompt:'哪個說法最準確？',options:[
+{label:'至少證明這次 interaction 收到成功 response，其他結果要另外查證',feedback:'Evidence 要帶著範圍理解。200 不會自動證明資料、外部付款或通知都符合需求。'},
+{label:'200 就代表整條業務流程全部成功',feedback:'這把一個局部訊號擴大成整個系統的保證。先問這份 evidence 實際觀察到哪裡。'}],term:{name:'Evidence scope（證據範圍）',plain:'一份證據真正涵蓋哪些元件、狀態與條件。'}},
+{id:'tests',eyebrow:'測試也有邊界',title:'測試全綠，就代表 production 正確嗎？',intro:'不同 test 可能只跑一個 function、一個 service，或整條使用者流程。',prompt:'理解測試結果時，第一個問題是？',options:[
+{label:'這個 test 實際穿過哪些 boundary，哪些 dependency 沒有包含？',feedback:'先看執行範圍，再解讀「通過」能支持什麼結論。名稱是 unit、integration 或 E2E 不是最重要的第一步。'},
+{label:'只要叫 E2E，就能證明所有 production 情況',feedback:'E2E 仍有 fixtures、environment、external dependency 與未涵蓋情境。名稱不會取消證據範圍。'}]},
+{id:'signals',eyebrow:'同一件事，三種視角',title:'通知沒送到，要看什麼？',intro:'你可能想知道「這一筆發生什麼」、「這一小時失敗多少」或「這次操作經過哪些元件」。',prompt:'如果要追一筆 request 穿過 API、queue、worker 的路徑，最直接的 signal 是？',options:[
+{label:'Trace',feedback:'Trace 用來看同一次操作跨多個元件的路徑。Log 適合事件細節，Metric 適合聚合數值。'},
+{label:'只看整體失敗率 Metric',feedback:'Metric 能告訴你失敗是否變多，但不一定能還原這一筆操作走過哪條路。'}],term:{name:'Trace（追蹤）',plain:'同一次操作穿過多個元件時，描述整條路徑與時間關係的 telemetry。'}},
+{id:'transfer',eyebrow:'Transfer 練習',title:'「資料沒填完不能推進」怎麼留下證據？',intro:'案件畫面已經把下一步按鈕 disabled，但你要確認規則不能被繞過。',prompt:'哪條 evidence chain 比較完整？',options:[
+{label:'需求規則 → backend enforcement → automated tests → production transition evidence',feedback:'這條鏈同時回答規則在哪裡被保護、上線前怎麼檢查、上線後怎麼知道真的發生。'},
+{label:'只確認畫面按鈕是灰色',feedback:'UI 可以說明操作體驗，但不能證明 API 或其他 caller 無法繞過規則。'}]}]},
+{id:'scale',number:7,title:'到底是哪裡撐不住？',summary:'先找 workload 和瓶頸，再加入有理由的複雜度。',stages:[
+{id:'workload',eyebrow:'先看工作長什麼樣',title:'三個系統都變成十倍流量',intro:'News Feed、Video Delivery、URL Shortener 都說流量增加十倍，但它們消耗的資源可能完全不同。',prompt:'哪個資訊最能幫你開始判斷？',options:[
+{label:'request / job rate、物件大小、讀寫比例、處理時間和尖峰',feedback:'先把 workload 說清楚，才能知道壓力是在 lookup、bandwidth、compute、database 還是別的地方。'},
+{label:'先統一加 Redis、Kafka 和 Kubernetes',feedback:'這些工具各自解不同問題。沒有 workload 和 bottleneck，無法判斷是否需要。'}],term:{name:'Workload（工作負載）',plain:'系統實際要處理的 requests、jobs、資料量與流量分布。'}},
+{id:'bottleneck',eyebrow:'找到真正受限的地方',title:'慢，不代表所有地方都慢',intro:'一條 request 會經過 app、database、external API。現在只有 database query 長期接近資源上限。',prompt:'第一個改善方向應該對準哪裡？',options:[
+{label:'先量測並處理 database query / index / data path',feedback:'先對準目前限制整體表現的 resource。改完後再用同一 workload 重新量測。'},
+{label:'先把所有服務都加倍',feedback:'這可能增加成本，但 database 仍是同一個限制點。'}],term:{name:'Bottleneck（瓶頸）',plain:'目前真正限制系統效能或容量的資源或處理階段。'}},
+{id:'cache',eyebrow:'改善也有代價',title:'Cache 讓讀取變快，還要擔心什麼？',intro:'常讀的資料先保存一份副本，可以減少回到原始資料來源的次數。',prompt:'哪個問題不能省略？',options:[
+{label:'這份副本可以舊多久？什麼時候更新或失效？',feedback:'Cache 的效能收益伴隨 freshness 與 invalidation 問題。關鍵業務決策仍要知道自己依賴哪個 authority。'},
+{label:'用了 cache 就可以假設永遠是最新資料',feedback:'Cache 是副本。它和原始資料之間可能有時間差。'}],term:{name:'Cache（快取）',plain:'先保存一份可再取得的資料副本，讓常見讀取不用每次回到原始來源。'}},
+{id:'transfer',eyebrow:'Transfer 練習',title:'數百集 Podcast 需要 Kubernetes 嗎？',intro:'低頻發布、下載遠多於寫入，音檔走 object storage / CDN，後台流量很低。',prompt:'目前最合理的判斷是？',options:[
+{label:'先維持簡單架構，等量測顯示新的 bottleneck 再增加元件',feedback:'Object storage / CDN 已處理主要媒體傳輸需求。新增 orchestration 要能指出它正在解哪個已知問題。'},
+{label:'只要是公開服務，就先做 microservices + Kubernetes',feedback:'這增加部署與維運面積，但目前 workload 沒有提供需要它的證據。'}]}]},
+{id:'evolution',number:8,title:'新版怎麼換上去，舊東西才不會壞？',summary:'把改版看成 code、contract、data 和 traffic 的一段轉換過程。',stages:[
+{id:'coexist',eyebrow:'部署不是一瞬間',title:'先刪舊欄位，再部署新版？',intro:'v1 讀寫 full_name；v2 改成 first_name + last_name。Rolling deploy 時，新舊版本會同時存在。',prompt:'哪個風險最先出現？',options:[
+{label:'v1 仍在跑，卻已經讀不到它需要的舊 schema',feedback:'改版要考慮一段新舊版本共存的時間，而不是假設所有 instance 同時瞬間更新。'},
+{label:'沒有風險，只要 v2 tests 通過即可',feedback:'Tests 沒有消除 production 中 old/new versions coexist 的事實。'}],term:{name:'Backward compatibility（向後相容）',plain:'新版上線時，在約定範圍內，舊 consumer 或舊資料仍能一起工作。'}},
+{id:'migration',eyebrow:'分階段改資料',title:'怎麼讓新舊版本都有路可走？',intro:'可以先增加新結構，讓程式同時支援過渡狀態，再搬資料、切換並驗證。',prompt:'哪個順序比較安全？',options:[
+{label:'先 expand → 相容程式 → backfill / switch → verify → 最後移除舊結構',feedback:'核心不是背固定六步，而是保留 compatibility window，直到確認舊 consumer 不再需要原結構。'},
+{label:'先 drop 舊欄位，再處理程式',feedback:'這會先破壞仍在執行的舊版本。'}],term:{name:'Migration（遷移）',plain:'把 schema、資料、設定或狀態，從舊形態安全移到新形態。'}},
+{id:'rollback',eyebrow:'Rollback 不是一個按鈕',title:'切回舊版程式，一切就回去了嗎？',intro:'新版已經寫入新格式資料，也可能已呼叫外部 API。',prompt:'哪個說法比較完整？',options:[
+{label:'要分清楚 code、traffic、config、data 和 external effect 各自能不能回復',feedback:'Code rollback 不會自動撤銷資料或外部副作用；有些狀況只能 forward fix 或 compensation。'},
+{label:'deploy 舊 binary 就等於整個系統回到過去',feedback:'已經發生的 data migration、message 或 external effect 仍然存在。'}],term:{name:'Rollout（逐步發布）',plain:'分批讓新版接觸更多 instances、traffic 或 users，而不是一次全部替換。'}},
+{id:'transfer',eyebrow:'Transfer 練習',title:'三個 repo 都綠燈，能一起上線嗎？',intro:'Frontend、backend、document engine 同時改了 job status，DB 也新增欄位。',prompt:'部署前最需要補哪一類證據？',options:[
+{label:'跨 repo contract / E2E 相容性，加上 old/new version coexist 的驗證',feedback:'各 repo CI 只能證明各自 checks。跨系統 change 還要確認 contract、schema、deploy order 與 rollback boundary。'},
+{label:'每個 repo CI 都綠，所以不用再看整合',feedback:'局部 checks 不會自動證明跨 repo 的語意與版本相容。'}]}]}];
 export function unitById(id){return units.find(u=>u.id===id)||units[0]}
 export function stageById(unit,id){return unit.stages.find(s=>s.id===id)||unit.stages[0]}
