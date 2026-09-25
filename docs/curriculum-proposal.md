@@ -1,8 +1,8 @@
 # System Design Learning Map：課綱重建提案 v0.2
 
 > 日期：2026-09-25
-> 狀態：**提案，等待使用者確認課綱**。
-> 已確認的是課程定位、[三層來源架構](source-strategy.md)，以及「常見 System Design 教學案例作為主教材；使用者實際接觸案例作為 transfer 練習」的案例策略。單元安排仍待確認。
+> 狀態：**課綱已確認（2026-09-25）**。
+> 已確認：課程定位、[三層來源架構](source-strategy.md)、「常見 System Design 教學案例作為主教材；使用者實際接觸案例作為 transfer 練習」的案例策略，以及本文件的三篇八單元結構與順序。
 > 本文件不取代目前已發布課程的實作規格；不修改舊課程資料、路由、互動、測試或 UI。
 
 ## 1. 已確認的方向與本次範圍
@@ -365,12 +365,19 @@ Transfer case 的目的不是介紹使用者自己的專案，而是檢查是否
 
 Canonical Content 的來源記錄須補到實際章節／頁碼或固定 commit，區分來源主張、本課程的補充推論與合成案例。付費教材原檔、課程影片、第三方圖像或私人資料不得隨本課綱文件直接提交到公開 repo；後續重用逐項檢查授權。
 
-## 11. 目前的確認點
+## 11. Curriculum Confirmation Gate
 
-使用者需要確認的是學習目的與深度是否適用、三篇八單元的學習路徑是否符合需要，以及貫穿／轉移案例是否合適；不要求初學者負責認證學科完整性。
+2026-09-25 使用者已確認本版課綱。
 
-已確認的案例策略：以常見 System Design 教學案例作主教材與對比；使用者實際接觸案例作 transfer；最後用案件追蹤＋批次文件處理的合成案例整合。
+Working curriculum 現在鎖定以下決策：
 
-尚未確認的項目：三篇八單元的結構與順序、各案例的最終細節、核心／延伸深度分界。
+- 最高層 learning outcome 與目標深度；
+- 三篇八單元的結構與順序；
+- BDD、AI 協作、安全／隱私、成本／複雜度作為橫貫考量；
+- 常見 System Design 教學案例作為主教材與對比；
+- 使用者實際接觸案例作 transfer；
+- 最後以案件追蹤＋批次文件處理的合成案例整合。
 
-確認後，才以此版本建立逐單元 Canonical Content 與來源對照，再做 Content Review。未確認前，不進入互動 storyboard、畫面文案或實作。
+這不是永久 locked curriculum；若後續來源研究發現重大缺漏或使用者要求調整，可以回到課綱層修訂。
+
+下一階段依 learning-map Skill 進入 **Canonical Content**。先為每個單元建立 canonical content brief 與 claim-level source mapping，再做 **Content Review / subject-matter validation**。在 Content Review 通過前，不進入 Interaction Storyboard、Learning Copy 或 Implementation。
