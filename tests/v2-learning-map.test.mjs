@@ -5,3 +5,5 @@ test('v2 route resolves map and stage',()=>{assert.deepEqual(parseV2Route('#/v2'
 test('unknown stage falls back deterministically',()=>{assert.equal(stageById(unitById('requirements'),'missing').id,'enough');});
 test('choice reveals feedback and optional term',()=>{const stage=stageById(unitById('requirements'),'enough');const result=choose(stage,0);assert.match(result.feedback,/規則/);assert.match(result.term.name,/Constraint/);});
 test('invalid choice does not invent state',()=>{assert.equal(choose(stageById(unitById('requirements'),'enough'),99),null);});
+test('units 3 to 5 expose the intended reasoning progression',()=>{assert.deepEqual(['concurrency','async','failure'].map(id=>unitById(id).stages.length),[4,4,4]);assert.equal(stageById(unitById('failure'),'timeout').term.name.startsWith('Unknown outcome'),true);});
+test('transfer stages do not name the solution in their prompt',()=>{for(const id of ['concurrency','async','failure']){const s=stageById(unitById(id),'transfer');assert.ok(s);assert.doesNotMatch(s.prompt,/Redis|transaction|queue|idempotency/i);}});
