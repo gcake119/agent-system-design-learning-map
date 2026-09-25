@@ -1,0 +1,4 @@
+import {unitById,stageById} from './course.mjs';
+export function parseV2Route(hash=''){const m=/^#\/v2(?:\/([^/]+))?(?:\/([^/]+))?$/.exec(hash);if(!m)return null;if(!m[1])return{view:'map'};const u=unitById(m[1]);if(!u.stages.length)return{view:'unit',unit:u.id,stage:null};const s=stageById(u,m[2]);return{view:'unit',unit:u.id,stage:s.id}}
+export function v2Route(unit,stage){return stage?`#/v2/${unit}/${stage}`:unit?`#/v2/${unit}`:'#/v2'}
+export function choose(stage,index){if(!stage?.options?.[index])return null;return{selected:index,feedback:stage.options[index].feedback,term:stage.term||null}}
