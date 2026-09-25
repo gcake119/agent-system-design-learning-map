@@ -1,8 +1,8 @@
-# System Design Learning Map：課綱重建提案 v0.1
+# System Design Learning Map：課綱重建提案 v0.2
 
 > 日期：2026-09-25
 > 狀態：**提案，等待使用者確認課綱**。
-> 已確認的是課程定位及 [三層來源架構](source-strategy.md)，不是本文件的單元安排。
+> 已確認的是課程定位、[三層來源架構](source-strategy.md)，以及「常見 System Design 教學案例作為主教材；使用者實際接觸案例作為 transfer 練習」的案例策略。單元安排仍待確認。
 > 本文件不取代目前已發布課程的實作規格；不修改舊課程資料、路由、互動、測試或 UI。
 
 ## 1. 已確認的方向與本次範圍
@@ -226,18 +226,83 @@ Cucumber 官方 BDD 與 Example Mapping 文件補作方法定義來源，列為�
 
 這是系統設計基本要求，不擴成獨立滲透測試或資安工具課。
 
-## 7. 整合練習與可轉移能力
+## 7. 案例策略：經典案例教概念，實際案例做 transfer
 
-提議以「場地預約與通知」作最小貫穿案例，以「批次文件匯入、核對與通知」作不同領域的整合練習。皆為合成教學情境，不包含真實個案或使用者專案內部資料。
+### 7.1 原則
 
-整合練習提供需求、限制與部分證據，不預先提供可直接套用的完整架構。學習者應能提出關鍵問題、定義狀態與契約、比較失敗與負載處理、安排驗證和交付，並解釋取捨。
+不再以單一預約系統貫穿八個單元，也不採「一章換一個完全無關故事」。
 
-確認理解的依據：
+每個單元使用：
+
+1. **經典主案例**：用常見 System Design 教學案例暴露本單元的核心問題；
+2. **經典對比案例**：改變 workload、資料或失敗條件，檢查原方案是否仍成立；
+3. **抽象原則**：把案例中的機制、適用條件與 trade-off 抽離；
+4. **Transfer case**：使用者曾接觸的專案只提供情境與證據，不提示應使用哪個元件或 pattern；
+5. 必要時在後續單元**重訪同一經典案例的另一個問題**，讓學習者理解同一系統同時有多種設計維度。
+
+這些案例配置是 curriculum-level 規劃；不預設畫面一定要做成比較卡、模擬器或固定步驟。互動形式留到 storyboard 階段。
+
+### 7.2 八單元案例配置
+
+| 單元 | 經典主案例 | 對比案例 | Transfer case | 主要要看見的差異 |
+| --- | --- | --- | --- | --- |
+| 1 行為與限制 | Ticket / Booking System | URL Shortener | Sim-sik 的預約需求（去識別化／合成化） | 同樣一句功能需求，背後需要釐清的業務規則、品質要求與風險不同 |
+| 2 邊界、責任與契約 | E-commerce Order System | Notification System | 衛生局 multi-repo 系統的服務責任（抽象化） | 元件／服務邊界應由責任、資料、信任與變更需求導出，不由「看起來完整」決定 |
+| 3 資料、狀態與併發 | Ticket Booking | Payment System | Sim-sik 心理師／場地預約，或案件狀態轉移 | 都要求正確，但 booking 的資源競爭與 payment 的帳務／操作識別暴露不同資料不變條件 |
+| 4 順序、等待與交接 | Notification System | Video / Media Processing Job | VocaScript 轉錄→辨識→摘要→輸出 | 使用者等待的 request path、背景工作與長任務 pipeline 對「完成」的定義不同 |
+| 5 失敗、重複與恢復 | Payment System | Notification / Job System | iThome 自動發文 timeout／發布結果未知 | 讀取重試、可重複工作與有副作用寫入不能使用同一套 retry 思維 |
+| 6 驗證、觀測與定位 | Order / Payment System | Distributed Job System | 衛生局需求→後端保證→tests / CI / production evidence | 測試證明指定行為，production telemetry 提供實際執行證據；兩者回答不同問題 |
+| 7 負載與瓶頸 | Twitter / News Feed | YouTube / Video Delivery、URL Shortener | 自架 Podcast Hosting | read-heavy feed、巨量媒體傳輸、短網址查詢與小型 podcast 的瓶頸與合理複雜度不同 |
+| 8 交付、相容與演進 | Web Service + Database Migration | Service API Evolution | 衛生局 frontend / backend / document-engine / DB 改版 | 程式版本、API contract、資料格式與 migration 可能同時存在不同版本，rollback 也有資料邊界 |
+
+Transfer case 使用的是專案型態與已知工程問題，不複製真實個案資料、內部敏感資料或未公開內容。若需要可重現教材資料，另外建立 synthetic fixtures。
+
+### 7.3 經典案例重訪規則
+
+重訪不是重複講同一內容。例如：
+
+- **Ticket Booking**：單元 1用來找規則與限制；單元 3才推演 concurrent booking 與資料保證。
+- **Payment**：單元 3用來辨認帳務狀態與不變條件；單元 5才處理 timeout、重複請求、冪等與 reconciliation；單元 6再看如何留下可核對證據。
+- **Notification / Job**：單元 4教「accepted ≠ completed」與背景工作；單元 5再注入 provider failure、重複 delivery、worker crash。
+- **URL Shortener**：單元 1只用來對比需求簡單但品質／規模假設不同；單元 7才處理 read-heavy workload、cache 與擴展。
+
+每次重訪都必須有新的 unit question、constraint 或 evidence；不能只換文案重播相同結論。
+
+### 7.4 Transfer 練習規則
+
+Transfer case 的目的不是介紹使用者自己的專案，而是檢查是否能把已學原則帶到不同 domain。
+
+因此 transfer 練習：
+
+- 不先標示「這題要用 transaction / queue / cache / idempotency」；
+- 先給需求、目前狀態、事故或量測資料；
+- 要求辨認還缺什麼資訊、哪個保證可能被破壞、需要什麼證據；
+- 允許多個合理方案，但必須說明適用條件與代價；
+- AI 可以協助提問、產生反例或檢查推理，但不能替代學習者說明設計依據。
+
+### 7.5 最終整合 transfer
+
+最終整合使用 **案件追蹤＋批次文件處理** 的合成案例。其結構參考使用者接觸過的案件追蹤系統，但重新建立教學用角色、欄位、文件與事件，不複製真實政府案件資料。
+
+整合題同時包含：
+
+- 批次匯入後每件工作各自有狀態；
+- 自動分派與人工核對；
+- 必要資訊未完成不得推進；
+- 文件處理可能耗時且部分失敗；
+- 外部通知；
+- 權限與 audit evidence；
+- workload 增長；
+- API／資料 schema 改版。
+
+題目只提供需求、限制與逐步揭露的證據，不預先提供完整架構。學習者應能提出關鍵問題、定義狀態與契約、推演併發／失敗／負載／改版，安排驗證與交付，並解釋 trade-off。
+
+確認 transfer 的依據：
 
 - 能把一項需求追到責任、資料、機制與證據；
-- 能預測一個未看過的併發、故障或版本變動情境；
+- 能預測一個未看過的併發、故障、負載或版本變動情境；
 - 能指出設計尚未支持的要求或待查證假設；
-- 能在需求改變時修改設計，說明代價，而不是照抄原範例元件。
+- 能在 constraint 改變時修改設計並說明代價，而不是照抄主案例元件。
 
 學習成果可逐步累積成一份設計說明，不要求一次填完大型文字表單，也不先決定介面型態。沒有新增評分、解鎖或學習完成閘門。
 
@@ -304,6 +369,8 @@ Canonical Content 的來源記錄須補到實際章節／頁碼或固定 commit�
 
 使用者需要確認的是學習目的與深度是否適用、三篇八單元的學習路徑是否符合需要，以及貫穿／轉移案例是否合適；不要求初學者負責認證學科完整性。
 
-尚未確認的項目：單元結構與順序、案例選擇、核心／延伸深度分界。
+已確認的案例策略：以常見 System Design 教學案例作主教材與對比；使用者實際接觸案例作 transfer；最後用案件追蹤＋批次文件處理的合成案例整合。
+
+尚未確認的項目：三篇八單元的結構與順序、各案例的最終細節、核心／延伸深度分界。
 
 確認後，才以此版本建立逐單元 Canonical Content 與來源對照，再做 Content Review。未確認前，不進入互動 storyboard、畫面文案或實作。
