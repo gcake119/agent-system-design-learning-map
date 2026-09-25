@@ -1,6 +1,6 @@
 # Unit 5 Canonical Content v0.1 — 處理失敗、重複與恢復
 
-> 狀態：Canonical Content v0.1 方向已由使用者確認（2026-09-25）；待 subject-matter Content Review。
+> 狀態：**Content Review PASS（2026-09-25）**。Canonical Content v0.1 方向已確認；以下修訂納入 subject-matter validation。
 > 本文件定義 Unit 5 必須正確傳達的 instructional meaning；不是特定 retry library、broker 或 payment provider 教學。
 
 ## Central question
@@ -287,11 +287,25 @@ Learner 應先問：
 - Azure / AWS messaging docs as needed for redelivery scope
 - Existing legacy reliability lessons as reusable teaching material, not authority
 
-## Pending validation before Content Review passes
+## Content Review — 2026-09-25
 
-1. 核實 Azure Retry 對 transient faults、idempotency、retry interval / cancel 的範圍。
-2. 核實 AWS Builders' Library 對 layered retries、backoff / jitter、idempotent API semantics 的具體說法。
-3. 核實 compensation 不是 automatic rollback，並保留 compensation failure / resume 的限制。
-4. Exactly-once 段落避免做超出來源的 universal impossibility claim；保持 scope-question framing。
-5. Payment case 不引用特定 provider guarantee；若後續要教 Stripe / payment API idempotency，另讀官方文件。
-6. iThome transfer 不把真實平台行為當教材事實。
+### Result: PASS
+
+Unit 5 的 failure classification → verification → bounded retry / recovery 推理鏈通過內容審查。
+
+### Validation decisions
+
+1. **Retry 僅針對可合理視為 transient 的 failure。** Azure Retry 明確要求依 operation / exception 類型判斷是否 cancel、立即 retry 或 delay retry；不是所有 failure 都重試。
+2. **Idempotency 與 side effect 必須一起判斷。** Azure Retry 指出非 idempotent operation 的 retry 可能造成 inconsistency；AWS Builders' Library 也把 stable client request identifier / semantic equivalence 作為 safe retry 的重要條件。
+3. **Layered retries 會放大 load。** AWS Builders' Library 的案例明確說明多層各自 retry 會 multiplicatively 增加 downstream calls；Canonical Content 的 retry ownership / budget 保留。
+4. **Backoff / jitter 是 load-control mechanism，不是 correctness guarantee。** 它降低同步 retry 與 overload 壓力，但不能修正 invalid request 或 duplicate business effect。
+5. **Compensation 不是 automatic rollback。** Azure Compensating Transaction 把它描述為 undo / counter-effect workflow；步驟可有 application-specific logic、順序可能不同，compensation 本身也可能失敗並需要可恢復 state。
+6. **Circuit breaker 與 retry 分工成立。** Retry 假設下一次可能成功；Circuit Breaker 在 dependency 持續故障時阻止更多呼叫並等待 recovery condition。
+7. **Exactly-once 維持 scope-question framing。** 不做「所有 exactly-once 都不可能」的 universal claim；只要求 learner 指出 transport / processing / business effect 的 scope 與 supporting mechanisms。
+8. **Payment / publishing 保持 synthetic。** 不引用特定 payment provider 或 iThome 的真實 idempotency guarantee；若未有官方 contract，就保持 unknown。
+
+### Remaining non-blocking work
+
+- Unit 6 需要把 failure evidence 與 observability / testing 接起來，不能把「有 log」當成 recovery correctness proof。
+- Storyboard 若模擬 timeout，畫面必須保留 remote effect 的 unknown branch，不能把 timeout 動畫直接畫成紅色「失敗」終點。
+- 若後續加入 poison message / dead-letter queue 的具體操作語意，需依所選 broker 官方文件核實。
