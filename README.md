@@ -1,5 +1,21 @@
 # Agent System Design 互動式學習地圖
 
+> **v2 重製中：課程主體已改為 System Design。** AI Agent 是分析需求、提出假設、比較方案與驗證設計的協作者，不再是課程主軸。新版位於 `learning-map-v2` branch / `#/v2`，目前進入 Technical QA；以下舊版七單元說明在 v2 merge 前保留作 legacy reference。
+
+## v2 教材與互動參考來源
+
+新版的內容來源與使用邊界完整記錄於 `docs/source-strategy.md`。主要來源分為：
+
+- **System Design 主體**：ByteByteGo System Design 教材／使用者提供的 2025 archive PDF、*Designing Data-Intensive Applications (DDIA)*、System Design Primer。
+- **原理與工程驗證**：MIT 6.5840 Distributed Systems、CMU 15-440 Distributed Systems、AWS Well-Architected Framework、Azure Architecture Center；特定機制再以 PostgreSQL 等官方文件核實。
+- **需求／驗證方法補充**：Cucumber BDD / Example Mapping，以及使用者提供的 BDD 線上課程大綱作 curriculum reference。
+- **AI 協作者層**：`bojieli/ai-agent-book`、Stanford CS329Z — Engineering AI Agents。這些來源用於「AI 如何協助 System Design reasoning」，不決定 System Design 主課綱。
+- **Presentation reference**：ByteByteGo 的圖解語言與資訊視覺化。
+- **Interaction reference**：`gcake119/system-design-simulator`。v2 參考其「改 workload／component／policy → 重算 system state / metrics → 顯示 bottleneck / trade-off」的互動模型，但不採 interview scoring、Architect Level、完整 component palette 或真實 benchmark 假設。
+
+所有 simulator 數字都是 **synthetic teaching assumptions**，不代表真實雲端服務、資料庫、Redis、Kafka 或其他產品 benchmark。內容正確性以 Canonical Content 與 Content Review 為準，interaction reference 不作 subject-matter authority。
+
+
 一套 Vue 互動教材，地圖只負責章節導航，不另設純簡報模式。
 
 七個單元、79 個互動情境：完整系統、任務推進、適當資訊、可控失敗、證據驗收、量測改善、分工取捨。以「能完成、能信任、能改善」組織課程，Observability 與 Evaluation 整合為證據驗收。
