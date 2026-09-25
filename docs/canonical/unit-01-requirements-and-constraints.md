@@ -1,6 +1,6 @@
 # Unit 1 Canonical Content v0.1 — 從工作情境定義行為與限制
 
-> 狀態：Draft，待 Content Review。
+> 狀態：Canonical Content v0.1 已由使用者確認（2026-09-25）；待 subject-matter Content Review。
 > 本文件定義 Unit 1 必須保留的 instructional meaning；不是投影片文案，也不指定互動形式。
 
 ## Central question
