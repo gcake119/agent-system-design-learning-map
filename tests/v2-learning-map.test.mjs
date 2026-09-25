@@ -1,3 +1,4 @@
+import {finalIncidents,finalDefaults,simulateFinal,incidentById} from '../learning/v2/sim/final-integrated.mjs';
 import {useLabSession,resetLabSession,snapshotLabSession,applyTransferBaseline} from '../learning/v2/sim/session.mjs';
 import {transferFor} from '../learning/v2/sim/transfers.mjs';
 import {lessonLabs,labFor,focusControls} from '../learning/v2/sim/lesson-labs.mjs';
@@ -58,3 +59,9 @@ test('rollout lesson does not expose schema control before coexistence is observ
 test('every unit has a domain transfer profile with visible assumptions',()=>{for(const unit of units){const t=transferFor(unit.id);assert.ok(t,`missing transfer for ${unit.id}`);assert.ok(t.system.length>=4);assert.ok(t.assumptions.length>=2);assert.ok(t.prompt.length>20);}});
 test('transfer baseline changes domain conditions without leaking state to another unit',()=>{resetLabSession('failure');resetLabSession('scale');applyTransferBaseline('failure');const failure=snapshotLabSession('failure');assert.equal(failure.timeoutRate,.08);assert.equal(failure.retries,0);assert.equal(snapshotLabSession('scale').preset,'url');});
 test('transfer profiles use user-experienced cases only as transfer, not as canonical answer labels',()=>{assert.match(transferFor('scale').title,/Podcast/);assert.match(transferFor('failure').title,/自動發文/);assert.match(transferFor('async').title,/VocaScript/);});
+
+test('final transfer injects five incidents into one integrated system',()=>{assert.deepEqual(finalIncidents.map(x=>x.id),['concurrent','unknown','backlog','provider','version']);assert.equal(incidentById('missing').id,'concurrent');});
+test('final concurrency incident starts unsafe and can be repaired with a learned mechanism',()=>{const unsafe=simulateFinal('concurrent',finalDefaults.concurrent);const safe=simulateFinal('concurrent',{...finalDefaults.concurrent,mechanism:'constraint'});assert.ok(unsafe.invalid>0);assert.equal(safe.invalid,0);});
+test('final backlog incident exposes capacity mismatch',()=>{const overloaded=simulateFinal('backlog',finalDefaults.backlog);const scaled=simulateFinal('backlog',{...finalDefaults.backlog,workers:4});assert.ok(overloaded.queueDepth>0);assert.ok(scaled.queueDepth<overloaded.queueDepth);});
+test('final unknown incident rewards verification before retry rather than naming a chapter',()=>{const blind=simulateFinal('unknown',{...finalDefaults.unknown,retries:1});const checked=simulateFinal('unknown',{...finalDefaults.unknown,retries:1,verify:true});assert.ok(checked.providerLoad<blind.providerLoad);});
+test('final version incident keeps rollout and compatibility as separate levers',()=>{const broken=simulateFinal('version',finalDefaults.version);const compatible=simulateFinal('version',{...finalDefaults.version,compatibility:true});assert.ok(broken.affectedTraffic>compatible.affectedTraffic);assert.equal(compatible.rollbackSafe,true);});
