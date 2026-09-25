@@ -1,6 +1,6 @@
 # Unit 5 Canonical Content v0.1 — 處理失敗、重複與恢復
 
-> 狀態：Draft，待使用者確認與 Content Review。
+> 狀態：Canonical Content v0.1 方向已由使用者確認（2026-09-25）；待 subject-matter Content Review。
 > 本文件定義 Unit 5 必須正確傳達的 instructional meaning；不是特定 retry library、broker 或 payment provider 教學。
 
 ## Central question
