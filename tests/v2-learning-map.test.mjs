@@ -1,3 +1,5 @@
+import {simulateEvidence} from '../learning/v2/sim/models/evidence.mjs';
+import {simulateRollout} from '../learning/v2/sim/models/rollout.mjs';
 import {simulateQueue} from '../learning/v2/sim/models/queue.mjs';
 import {simulateFailure} from '../learning/v2/sim/models/failure.mjs';
 import {simulateConcurrency} from '../learning/v2/sim/models/concurrency.mjs';
@@ -27,3 +29,7 @@ test('more workers reduce queue backlog when capacity catches up',()=>{const one
 test('blind retries increase provider load and can duplicate effects',()=>{const base=simulateFailure({operations:1000,timeoutRate:.1,retries:0});const retry=simulateFailure({operations:1000,timeoutRate:.1,retries:3,idempotency:false});assert.ok(retry.providerLoad>base.providerLoad);assert.ok(retry.duplicateEffects>0);});
 test('idempotency removes duplicate effects without pretending unknown outcomes vanish',()=>{const r=simulateFailure({operations:1000,timeoutRate:.1,retries:1,idempotency:true});assert.equal(r.duplicateEffects,0);assert.ok(r.unknown>=0);});
 test('verification before retry reduces blind retry candidates and provider load',()=>{const blind=simulateFailure({operations:1000,timeoutRate:.1,retries:1,verifyBeforeRetry:false});const verify=simulateFailure({operations:1000,timeoutRate:.1,retries:1,verifyBeforeRetry:true});assert.ok(verify.providerLoad<blind.providerLoad);assert.ok(verify.verifiedBeforeRetry>0);});
+
+test('evidence views expose different slices of the same failure',()=>{const log=simulateEvidence({failure:'worker-crash',view:'log'});const trace=simulateEvidence({failure:'worker-crash',view:'trace'});const state=simulateEvidence({failure:'worker-crash',view:'state'});assert.notDeepEqual(log.items,trace.items);assert.match(trace.items.join(' '),/Worker/);assert.match(state.items.join(' '),/artifact = missing/);});
+test('rollout limits exposure but cannot repair incompatibility',()=>{const ten=simulateRollout({rollout:10,compatibility:false,schema:'expanded'});const full=simulateRollout({rollout:100,compatibility:false,schema:'expanded'});assert.ok(ten.affectedTraffic>0);assert.ok(full.blastRadius>ten.blastRadius);assert.equal(full.canPromote,false);});
+test('contracting schema while old version exists makes rollback unsafe',()=>{const safe=simulateRollout({rollout:50,compatibility:true,schema:'expanded'});const unsafe=simulateRollout({rollout:50,compatibility:true,schema:'contracted'});assert.equal(safe.rollbackSafe,true);assert.equal(unsafe.rollbackSafe,false);assert.ok(unsafe.incompatibleOldTraffic>0);});
