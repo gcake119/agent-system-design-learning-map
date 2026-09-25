@@ -26,8 +26,8 @@
 
 | Unit | Canonical Content | Content Review |
 | --- | --- | --- |
-| 1 行為與限制 | draft v0.1 | pending |
-| 2 邊界、責任與契約 | pending | pending |
+| 1 行為與限制 | confirmed v0.1 | **PASS — 2026-09-25** |
+| 2 邊界、責任與契約 | draft v0.1 | pending |
 | 3 資料、狀態與併發 | pending | pending |
 | 4 順序、等待與交接 | pending | pending |
 | 5 失敗、重複與恢復 | pending | pending |
