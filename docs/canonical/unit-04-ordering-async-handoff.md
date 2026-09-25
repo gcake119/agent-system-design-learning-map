@@ -1,6 +1,6 @@
 # Unit 4 Canonical Content v0.1 — 決定工作的順序、等待與交接
 
-> 狀態：Canonical Content v0.1 方向已由使用者確認（2026-09-25）；待 subject-matter Content Review。
+> 狀態：**Content Review PASS（2026-09-25）**。Canonical Content v0.1 方向已確認；以下修訂納入 subject-matter validation。
 > 本文件定義 Unit 4 必須正確傳達的 instructional meaning；不是 message broker、Kafka 或 workflow framework 教學。
 
 ## Central question
@@ -236,11 +236,23 @@ Learner 應辨認：
 - ByteByteGo archive — message queue / Kafka / async diagrams as supplemental coverage
 - Existing course handoff / state content as legacy material to adapt, not authority
 
-## Pending validation before Content Review passes
+## Content Review — 2026-09-25
 
-1. 核實 Azure Queue-Based Load Leveling 對 buffering / decoupling / queue monitoring 的原文範圍。
-2. 核實 Asynchronous Request-Reply 是否支持 accepted + status / result semantics，避免把 HTTP-specific 202 pattern泛化成所有 async interaction。
-3. 核實 Competing Consumers / Pipes and Filters 對 parallelism、ordering、duplicate / idempotency 的限制。
-4. 「queue 不保證 end-to-end exactly once」需要用 product-neutral messaging source或明確縮成「不能從 queued/delivered 推論 business effect exactly once」。
-5. VocaScript transfer 的 stage dependency 必須標為 synthetic assumption，不根據使用者真實 pipeline 未驗證細節。
-6. Unit 4 不提前教 retry / idempotency implementation；只標出 Unit 5 必須處理的 boundary。
+### Result: PASS
+
+Unit 4 的 dependency → interaction semantics → job state → handoff → backlog 推理鏈通過內容審查。
+
+### Validation decisions
+
+1. **Queue-Based Load Leveling 的 scope 收斂。** Queue 可以 decouple arrival rate 與 processing rate、buffer burst、讓 consumer 依自身 capacity 處理；但 queue 本身不創造 processing capacity，長期 arrival > service rate 仍會累積 backlog。
+2. **HTTP 202 只是 async request-reply 的一種具體 pattern。** Azure Asynchronous Request-Reply 使用 202 + status endpoint / Location 作 Web API 例子；Canonical Content 保留更一般的「acknowledgement + stable work identity + later result」語意，不把 202 當所有 async interaction 的必要形式。
+3. **Competing Consumers 不是無條件 parallelism。** 增加 consumers 可提升 throughput / availability，但 ordering、shared-resource contention、duplicate / failure semantics 仍需 application / broker 設計。
+4. **Exactly-once claim 收斂。** Unit 4 不宣稱所有 queue 都會 duplicate，也不宣稱沒有 broker 能提供 exactly-once-related features；只教：不能從「message accepted / delivered」直接推論「end-to-end business effect 恰好發生一次」。這個 end-to-end 問題留 Unit 5。
+5. **Pipeline parallelism 必須由 dependency 決定。** Pipes-and-Filters 類 pattern 可以把工作拆成 stages，但每個 stage 的 input/output、failure、ordering 與 state 都要明示；不是看到 pipeline 就自動平行。
+6. **Backpressure 是 capacity mismatch 的設計問題。** Unit 4 只建立 backlog / admission / user-visible wait 的概念；Unit 7 再做 throughput / capacity measurement。
+7. **VocaScript transfer 全部視為 synthetic teaching assumptions。** 不宣稱真實專案的 diarization / transcription dependency 或 production architecture 已被核實。
+
+### Remaining non-blocking work
+
+- Unit 5 正式處理 retry、duplicate delivery / effects、idempotency、unknown outcome、poison work 與 recovery；Unit 4 不提前提供完整解法。
+- Storyboard 若用 queue 動畫，必須分開呈現 producer accepted、broker persisted、consumer received、business state changed，避免視覺上把它們合成同一個「成功」。
