@@ -7,6 +7,8 @@ import ConcurrencySimulator from './components/ConcurrencySimulator.vue';
 import CapacitySimulator from './components/CapacitySimulator.vue';
 import QueueSimulator from './components/QueueSimulator.vue';
 import FailureSimulator from './components/FailureSimulator.vue';
+import EvidenceSimulator from './components/EvidenceSimulator.vue';
+import RolloutSimulator from './components/RolloutSimulator.vue';
 const routeState=ref(parseV2Route(location.hash)||{view:'map'}),selected=ref(-1),result=ref(null);
 const unit=computed(()=>routeState.value.view==='unit'?unitById(routeState.value.unit):null);
 const stage=computed(()=>unit.value?.stages.length?stageById(unit.value,routeState.value.stage):null);
@@ -29,5 +31,7 @@ onMounted(()=>window.addEventListener('hashchange',sync));onUnmounted(()=>window
 <CapacitySimulator v-else-if="unit.id==='scale' && stage.id==='workload'" />
 <QueueSimulator v-else-if="unit.id==='async' && stage.id==='wait'" />
 <FailureSimulator v-else-if="unit.id==='failure' && stage.id==='timeout'" />
-<section v-else class="v2-board"><div class="v2-question"><span>現在先想</span><h2>{{stage.prompt}}</h2></div><div class="v2-options"><button v-for="(option,i) in stage.options" :key="option.label" :aria-pressed="selected===i" @click="select(i)"><span>{{option.label}}</span><b>→</b></button></div><div v-if="result" class="v2-result" role="status"><p class="v2-result-label">看看這個選擇帶來什麼</p><p>{{result.feedback}}</p><div v-if="result.term" class="v2-term"><strong>{{result.term.name}}</strong><span>{{result.term.plain}}</span></div></div><p v-else class="v2-note">沒有計分。先做一個判斷，再看它會把設計帶到哪裡。</p></section><div class="v2-actions"><button v-if="result" class="v2-secondary" @click="restart">重新比較</button><a v-if="(result || (unit.id==='concurrency'&&stage.id==='race') || (unit.id==='scale'&&stage.id==='workload') || (unit.id==='async'&&stage.id==='wait') || (unit.id==='failure'&&stage.id==='timeout')) && nextStage" class="v2-primary" :href="v2Route(unit.id,nextStage.id)">繼續：{{nextStage.title}} →</a><a v-else-if="result" class="v2-primary" :href="v2Route()">回到八個問題 →</a></div></article>
+<EvidenceSimulator v-else-if="unit.id==='evidence' && stage.id==='scope'" />
+<RolloutSimulator v-else-if="unit.id==='evolution' && stage.id==='coexist'" />
+<section v-else class="v2-board"><div class="v2-question"><span>現在先想</span><h2>{{stage.prompt}}</h2></div><div class="v2-options"><button v-for="(option,i) in stage.options" :key="option.label" :aria-pressed="selected===i" @click="select(i)"><span>{{option.label}}</span><b>→</b></button></div><div v-if="result" class="v2-result" role="status"><p class="v2-result-label">看看這個選擇帶來什麼</p><p>{{result.feedback}}</p><div v-if="result.term" class="v2-term"><strong>{{result.term.name}}</strong><span>{{result.term.plain}}</span></div></div><p v-else class="v2-note">沒有計分。先做一個判斷，再看它會把設計帶到哪裡。</p></section><div class="v2-actions"><button v-if="result" class="v2-secondary" @click="restart">重新比較</button><a v-if="(result || (unit.id==='concurrency'&&stage.id==='race') || (unit.id==='scale'&&stage.id==='workload') || (unit.id==='async'&&stage.id==='wait') || (unit.id==='failure'&&stage.id==='timeout') || (unit.id==='evidence'&&stage.id==='scope') || (unit.id==='evolution'&&stage.id==='coexist')) && nextStage" class="v2-primary" :href="v2Route(unit.id,nextStage.id)">繼續：{{nextStage.title}} →</a><a v-else-if="result" class="v2-primary" :href="v2Route()">回到八個問題 →</a></div></article>
 </main><footer>所有案例與數字都是教學用合成情境；先理解機制，再把它帶回自己的系統。</footer></div></template>
