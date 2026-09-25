@@ -1,6 +1,6 @@
 # Unit 3 Canonical Content v0.1 — 讓資料與狀態在併發下仍然正確
 
-> 狀態：Canonical Content v0.1 方向已由使用者確認（2026-09-25）；待 subject-matter Content Review。
+> 狀態：**Content Review PASS（2026-09-25）**。Canonical Content v0.1 方向已確認；以下修訂納入 subject-matter validation。
 > 本文件定義 Unit 3 必須正確傳達的 instructional meaning；不是 database tutorial、SQL 教學或 UI 規格。
 
 ## Central question
@@ -284,11 +284,25 @@ Synthetic case：
 - Azure Architecture Center — Cache-Aside pattern
 - User-provided ByteByteGo archive — database / cache / system design sections
 
-## Pending validation before Content Review passes
+## Content Review — 2026-09-25
 
-1. 固定 DDIA 版本與可取得的實際章節／頁碼；若無法取得全文，不用二手摘要替代原書主張。
-2. 以 PostgreSQL 官方文件核實 Read Committed / Repeatable Read / Serializable 的表述，避免把 PostgreSQL implementation 說成 SQL / all databases universal behavior。
-3. 核對「constraint / optimistic / locking / serializable」比較是否保持概念層，不誤導成互斥選項；實務方案可以組合。
-4. Payment case 的 ledger 說明需要支付／會計系統來源支持；若無足夠來源，Content Review 時縮減到 operation identity + state，不教 ledger architecture。
-5. 檢查 cache / stale read example：顯示 availability 是否能 stale 是 synthetic business assumption，不能泛化成所有 booking system。
-6. Unit 3 不提前解 Unit 5 的 duplicate external effects / exactly-once claims。
+### Result: PASS
+
+Unit 3 的 learning objectives 與核心推理鏈通過內容審查。審查採 PostgreSQL 官方 transaction-isolation 文件與 Azure Cache-Aside 官方文件作 implementation-level 核實；DDIA / MIT 仍保留作後續 deeper explanation source，但未用未取得全文的內容支撐本次 PASS。
+
+### Validation decisions
+
+1. **PostgreSQL 行為不泛化。** PostgreSQL current docs 說明 Read Committed 以 statement snapshot 為主、Repeatable Read 提供 transaction-stable snapshot 但仍可能有 serialization anomaly、Serializable 會在無法等價於某個 serial execution 時 abort transaction。教材只用這些作具體 implementation example。
+2. **Serializable 不是「不用處理衝突」。** PostgreSQL Serializable 可能回傳 serialization failure；application 必須準備重做整個 transaction。教材保留 retry / error handling 到 Unit 5 深入。
+3. **Transaction 不等於任意 invariant 自動成立。** correctness 仍依 transaction boundary、isolation、statements、constraints 與 application rule；PostgreSQL 官方文件也特別提醒 Repeatable Read 下複雜 business rule 仍可能需要 explicit locking / stronger isolation。
+4. **Mechanisms 可組合。** database constraint、conditional / optimistic update、explicit lock、transaction isolation 不是四個互斥架構選項。案例比較只問各自 enforcement scope 與代價。
+5. **Cache staleness 有正式來源支持。** Azure Cache-Aside 明確指出 cache 與 underlying store 不保證永遠一致，需考慮 expiration / invalidation / stale data；因此 C6 可保留。但「availability display 可以 stale」仍只是 synthetic booking assumption。
+6. **Payment case 收斂。** Unit 3 不教完整 ledger architecture。保留 stable operation identity、explicit payment state、local writes / projections 的概念；external duplicate effects、reconciliation、exactly-once claims 全部留 Unit 5。
+7. **Source of truth 必須帶 scope。** 可以有多個 authorities 分別負責不同 facts；不能把「single source of truth」教成所有資料都集中到一個 physical database。
+8. **Unit 3 不教 CAP slogan。** CAP / consensus / cross-region replication 留延伸內容；核心只要求 learner 描述 read freshness、write conflict、authority 與 business tolerance。
+
+### Remaining non-blocking work
+
+- Canonical Content 若在後續版本加入 isolation anomaly taxonomy（write skew、phantom 等）或不同 DB 的 optimistic concurrency syntax，要新增對應的一手來源。
+- DDIA 的正式版本／頁碼仍應在需要引用其 reasoning 時固定；目前不以二手摘要補缺。
+- Storyboard 若做 concurrency animation，必須清楚區分「教學 interleaving」與「某 DB 實際 scheduler / lock implementation」。
