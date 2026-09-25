@@ -1,3 +1,4 @@
+import {useLabSession,resetLabSession,snapshotLabSession} from '../learning/v2/sim/session.mjs';
 import {lessonLabs,labFor} from '../learning/v2/sim/lesson-labs.mjs';
 import {simulateRequirements} from '../learning/v2/sim/models/requirements.mjs';
 import {simulateBoundaries} from '../learning/v2/sim/models/boundary.mjs';
@@ -44,3 +45,7 @@ test('unsafe shared writes and client-only authorization surface distinct bounda
 
 test('every learner-facing stage is backed by a persistent simulator lab',()=>{for(const unit of units){for(const stage of unit.stages){const lab=labFor(unit.id,stage.id);assert.ok(lab,`missing lab for ${unit.id}/${stage.id}`);assert.ok(lab.component);assert.ok(lab.focus);assert.ok(lab.note.length>12);}}});
 test('each unit keeps one simulation model across its stages',()=>{for(const unit of units){const components=new Set(unit.stages.map(stage=>labFor(unit.id,stage.id).component));assert.equal(components.size,1,`${unit.id} switches simulation model mid-unit`);}});
+
+test('unit lab session survives stage navigation because state is unit-scoped',()=>{resetLabSession('failure');const first=useLabSession('failure');first.retries=3;first.idempotency=true;const nextStage=useLabSession('failure');assert.equal(nextStage.retries,3);assert.equal(nextStage.idempotency,true);});
+test('unit lab sessions remain isolated from each other',()=>{resetLabSession('concurrency');resetLabSession('scale');useLabSession('concurrency').writers=5;assert.equal(useLabSession('scale').rps,1000);assert.equal(snapshotLabSession('concurrency').writers,5);});
+test('lab reset restores the experiment baseline',()=>{const s=useLabSession('async');s.workers=4;s.asyncMode=true;resetLabSession('async');assert.deepEqual(snapshotLabSession('async'),{arrival:800,workerRate:400,workers:1,asyncMode:false});});
