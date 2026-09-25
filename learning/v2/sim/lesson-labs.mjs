@@ -48,3 +48,13 @@ export const lessonLabs={
  }}
 };
 export function labFor(unitId,stageId){return lessonLabs[unitId]?.stages?.[stageId]||null}
+export const focusControls={
+ requirements:{requirements:['預約規則','情境條件'],rule:['預約規則'],transfer:['預約規則','情境條件']},
+ boundaries:{layout:['部署方式'],contract:['部署方式','Payment boundary','共享寫入'],trust:['部署方式','Payment boundary','前端授權'],transfer:['部署方式','Payment boundary','共享寫入','前端授權']},
+ concurrency:{writers:['同時 writers'],authority:['同時 writers'],mechanism:['同時 writers','寫入保護'],transfer:['同時 writers','寫入保護']},
+ async:{sync:['arrival','同步／非同步'],states:['arrival','同步／非同步'],capacity:['arrival','workers'],transfer:['arrival','workers','同步／非同步']},
+ failure:{timeout:['timeout rate'],retry:['timeout rate','retry'],safety:['timeout rate','retry','查證／冪等'],transfer:['timeout rate','retry','查證／冪等']},
+ evidence:{scope:['failure','evidence view'],tests:['failure','evidence view'],signals:['failure','evidence view'],transfer:['failure','evidence view']},
+ scale:{workload:['scenario','traffic'],bottleneck:['scenario','traffic'],intervention:['scenario','traffic','architecture'],transfer:['scenario','traffic','architecture']},
+ evolution:{coexist:['rollout'],schema:['rollout','compatibility','schema'],rollback:['rollout','compatibility','schema'],transfer:['rollout','compatibility','schema']}
+};
