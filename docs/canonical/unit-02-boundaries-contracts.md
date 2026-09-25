@@ -1,6 +1,6 @@
 # Unit 2 Canonical Content v0.1 — 劃清系統邊界、責任與契約
 
-> 狀態：Canonical Content v0.1 已由使用者確認（2026-09-25）；待 subject-matter Content Review。
+> 狀態：**Content Review PASS（2026-09-25）**。Canonical Content v0.1 已確認；以下修訂納入 subject-matter validation。
 > 本文件定義 Unit 2 必須正確傳達的 instructional meaning；不是 UI、互動或 API 設計規範。
 
 ## Central question
@@ -252,10 +252,23 @@ Unit 2 只設計責任、ownership、trust 與 contract；跨服務 transaction 
 - AWS Well-Architected — Security design principles
 - System Design Primer / ByteByteGo archive as coverage and comparison references
 
-## Pending validation before Content Review passes
+## Content Review — 2026-09-25
 
-1. 檢查 C2 是否過度把 microservice-specific DDD guidance 泛化到所有 module boundaries；Canonical Content 應保持「一般原則」與「microservice-specific evidence」的區分。
-2. 補一手 authorization source，確認 C5 的 server-side enforcement 表述；AWS security principle 支持 least privilege，但還需 application/API-level authority。
-3. 檢查 data ownership 的教學簡化，避免誤教成「physical database 必須完全分離」。
-4. 檢查 Order case 是否在 Unit 2 偷渡 Unit 3/4 的 consistency / async 解法；本單元只能提出 boundary consequence。
-5. Content Review 通過前，不把 microservices 當預設 reference architecture。
+### Result: PASS
+
+C1–C7、Order / Notification 案例與 transfer boundary 通過內容審查。沒有需要改變 Unit 2 learning objectives 或課綱位置的 material issue。
+
+### Validation decisions
+
+1. **一般 boundary 原則與 microservice-specific guidance 分開。** Azure 的 domain analysis / microservice guidance 用來證明「business capability、bounded context、NFR、team / data / scale 等都會影響 service boundary」，不把 DDD bounded context 宣稱成所有 module / process boundary 的唯一方法。
+2. **Authorization enforcement 收斂為 trusted boundary 原則。** Client-side visibility / disabled state 只屬 UX；有副作用或受保護資源的授權判斷必須在不能被未信任 client 繞過的 server / service side enforcement point 執行。具體 OAuth / JWT / RBAC 不在 Unit 2。
+3. **Data ownership 是 logical responsibility，不等於 physical database topology。** 「誰負責 business write rules」與「資料部署在哪台 DB server」分開；不教成每個 service 必須一台獨立 database。
+4. **Contract 不只 schema。** request / response shape、business semantics、error / unknown outcome、identity / authorization context、side effects 與 compatibility 都可能是 consumer 依賴的一部分；Unit 5、8再深入重複操作與版本演進。
+5. **Order case 不提前解 consistency。** Unit 2 只讓學習者看見「拆 boundary 後會產生跨邊界資料與協調問題」，不在此單元教 saga / distributed transaction / eventual consistency 解法。
+6. **Microservices 不是 reference architecture default。** Modular monolith 或較少 deployment units 在需求符合時是完整設計選擇，不是過渡失敗狀態。
+
+### Remaining non-blocking work
+
+- Unit 3 需要正式建立 transaction / isolation / concurrency 的 canonical definitions，不能沿用 Unit 2 的高層 data ownership 語言代替資料正確性機制。
+- Unit 8 再正式處理 contract versioning / backward compatibility；Unit 2 只要求學習者知道 compatibility 是 contract concern。
+- Storyboard 階段若使用 boxes / arrows，必須明示 abstraction level，避免 learner 把每個 box 自動讀成 microservice。
