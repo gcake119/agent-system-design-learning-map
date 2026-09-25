@@ -1,3 +1,5 @@
+import {simulateConcurrency} from '../learning/v2/sim/models/concurrency.mjs';
+import {simulateCapacity} from '../learning/v2/sim/models/capacity.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';import {units,unitById,stageById} from '../learning/v2/course.mjs';import {parseV2Route,v2Route,choose,finalIncident} from '../learning/v2/interaction.mjs';
 test('v2 keeps eight system-design questions',()=>{assert.equal(units.length,8);assert.deepEqual(units.map(u=>u.number),[1,2,3,4,5,6,7,8]);});
 test('first slice has interactive units 1 and 2',()=>{assert.ok(unitById('requirements').stages.length>=3);assert.ok(unitById('boundaries').stages.length>=4);});
@@ -12,3 +14,8 @@ test('all eight units now have learner-facing stages',()=>{for(const unit of uni
 test('units 6 to 8 end with unprompted transfer practice',()=>{for(const id of ['evidence','scale','evolution'])assert.equal(unitById(id).stages.at(-1).id,'transfer');});
 test('final transfer route and incidents are deterministic',()=>{assert.equal(parseV2Route('#/v2/final').view,'final');assert.equal(finalIncident('unknown').id,'unknown');assert.equal(finalIncident('missing').id,'concurrent');});
 test('core first-use terms include plain-language definitions',()=>{for(const unit of units){for(const stage of unit.stages){if(stage.term){assert.ok(stage.term.name.length>2);assert.ok(stage.term.plain.length>8);}}}});
+
+test('concurrency simulator makes invariant break observable',()=>{const unsafe=simulateConcurrency({capacity:1,writers:2,mechanism:'none'});assert.equal(unsafe.invalid,1);assert.equal(unsafe.ruleHeld,false);const safe=simulateConcurrency({capacity:1,writers:2,mechanism:'constraint'});assert.equal(safe.invalid,0);assert.equal(safe.rejected,1);});
+test('locking trades correctness for visible waiting in the teaching model',()=>{const r=simulateConcurrency({capacity:1,writers:5,mechanism:'lock'});assert.equal(r.ruleHeld,true);assert.ok(r.waitMs>0);});
+test('capacity simulator exposes database bottleneck and cache consequence',()=>{const base=simulateCapacity({preset:'url',requestsPerSec:20000,cache:false});assert.ok(base.bottlenecks.includes('db'));const cached=simulateCapacity({preset:'url',requestsPerSec:20000,cache:true,cacheHit:.85});const db=cached.nodes.find(n=>n.id==='db');assert.ok(db.incoming<base.nodes.find(n=>n.id==='db').incoming);});
+test('video CDN changes origin bandwidth rather than pretending request work vanished',()=>{const base=simulateCapacity({preset:'video',requestsPerSec:10000,cdn:false,objectKB:5000,cacheHit:.9});const edge=simulateCapacity({preset:'video',requestsPerSec:10000,cdn:true,objectKB:5000,cacheHit:.9});assert.ok(edge.bandwidthMbps<base.bandwidthMbps);});
