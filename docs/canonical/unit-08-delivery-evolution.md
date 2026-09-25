@@ -1,6 +1,6 @@
 # Unit 8 Canonical Content v0.1 — 安全交付版本，維持資料與服務相容
 
-> 狀態：Draft，待使用者確認與 Content Review。
+> 狀態：Canonical Content v0.1 方向已由使用者確認（2026-09-25）；待 subject-matter Content Review。
 > 本文件定義 Unit 8 必須正確傳達的 instructional meaning；不是 GitHub Actions、Docker、Kubernetes、Terraform 或特定雲端部署教學。
 
 ## Central question
