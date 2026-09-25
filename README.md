@@ -42,6 +42,14 @@ Agent 可以同時讀取教材 fork 與私人 Learning Handoff，再依實際學
 
 `learning-map`：https://github.com/gcake119/learning-map
 
+## 開源與貢獻
+
+本教材採 **MIT License** 開源。你可以 Fork、修改並建立自己的教材版本；依 MIT 條款再發布時需保留原始 copyright 與授權聲明。
+
+歡迎透過 issue / pull request 回饋可泛化的教材、互動、測試與 accessibility 改善。個人化學習修改不必全部送回 upstream；若改善來自 private Learning Handoff，請先去除個人學習紀錄與可識別資訊。
+
+詳細流程請見 `CONTRIBUTING.md`，完整授權文字請見 `LICENSE`。
+
 ## 開發與部署
 
 七個單元入口各有一個流程動畫實驗：完整查詢、循環與恢復、資訊壓縮與刷新、寫入逾時、trace 取證、平行時間軸、多助手交接。動作逐步推進；實驗內可切換條件、還原上一步及重播。動畫狀態不寫入設計筆記，離開情境後重設。支援手動關閉動態及系統 reduced-motion，靜態結果與資訊完全相同。
