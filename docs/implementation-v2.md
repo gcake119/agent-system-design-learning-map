@@ -88,3 +88,24 @@ GitHub connector 可以提交程式與檢查 repository state，但本階段需�
 8. 依實際畫面修正互動密度與視覺層級。
 
 這是適合交接 Codex 的 checkpoint；QA findings 回寫本文件，再決定是否 merge / replace legacy route。
+
+
+## Interaction architecture correction — 2026-09-26
+
+使用者指出目前 option-card / text-feedback 為主的互動，無法把「單一情境」和「系統參數／元件造成的影響」連結起來。此 finding 接受。
+
+參考 `gcake119/system-design-simulator` 後，互動方向改為 **simulator-linked learning**：
+
+- 情境改變必須進入 simulation model；
+- learner 改參數／元件／policy 後，system graph / metrics / state 一起改變；
+- consequence 直接標在 node / edge / state；
+- trade-off panel 顯示改動帶來的收益與代價；
+- 不繼續 polish 現在的選項卡 UI。
+
+新的 reference implementation 先做兩章：
+1. Unit 3 Concurrency Simulator；
+2. Unit 7 Workload / Bottleneck Simulator。
+
+通過 Human Learning Review 後再擴到其他單元。
+
+詳見 `docs/interaction-redesign-v0.2.md`。
