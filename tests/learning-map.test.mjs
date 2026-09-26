@@ -1,20 +1,20 @@
-import {finalIncidents,finalDefaults,simulateFinal,incidentById} from '../learning/v2/sim/final-integrated.mjs';
-import {useLabSession,resetLabSession,snapshotLabSession,applyTransferBaseline} from '../learning/v2/sim/session.mjs';
-import {transferFor} from '../learning/v2/sim/transfers.mjs';
-import {lessonLabs,labFor,focusControls} from '../learning/v2/sim/lesson-labs.mjs';
-import {simulateRequirements} from '../learning/v2/sim/models/requirements.mjs';
-import {simulateBoundaries} from '../learning/v2/sim/models/boundary.mjs';
-import {simulateEvidence} from '../learning/v2/sim/models/evidence.mjs';
-import {simulateRollout} from '../learning/v2/sim/models/rollout.mjs';
-import {simulateQueue} from '../learning/v2/sim/models/queue.mjs';
-import {simulateFailure} from '../learning/v2/sim/models/failure.mjs';
-import {simulateConcurrency} from '../learning/v2/sim/models/concurrency.mjs';
-import {simulateCapacity} from '../learning/v2/sim/models/capacity.mjs';
-import test from 'node:test';import assert from 'node:assert/strict';import {units,unitById,stageById} from '../learning/v2/course.mjs';import {parseV2Route,v2Route,choose,finalIncident} from '../learning/v2/interaction.mjs';
+import {finalIncidents,finalDefaults,simulateFinal,incidentById} from '../learning/sim/final-integrated.mjs';
+import {useLabSession,resetLabSession,snapshotLabSession,applyTransferBaseline} from '../learning/sim/session.mjs';
+import {transferFor} from '../learning/sim/transfers.mjs';
+import {lessonLabs,labFor,focusControls} from '../learning/sim/lesson-labs.mjs';
+import {simulateRequirements} from '../learning/sim/models/requirements.mjs';
+import {simulateBoundaries} from '../learning/sim/models/boundary.mjs';
+import {simulateEvidence} from '../learning/sim/models/evidence.mjs';
+import {simulateRollout} from '../learning/sim/models/rollout.mjs';
+import {simulateQueue} from '../learning/sim/models/queue.mjs';
+import {simulateFailure} from '../learning/sim/models/failure.mjs';
+import {simulateConcurrency} from '../learning/sim/models/concurrency.mjs';
+import {simulateCapacity} from '../learning/sim/models/capacity.mjs';
+import test from 'node:test';import assert from 'node:assert/strict';import {units,unitById,stageById} from '../learning/course.mjs';import {parseRoute,courseRoute,choose,finalIncident} from '../learning/interaction.mjs';
 test('v2 keeps eight system-design questions',()=>{assert.equal(units.length,8);assert.deepEqual(units.map(u=>u.number),[1,2,3,4,5,6,7,8]);});
 test('first slice has interactive units 1 and 2',()=>{assert.ok(unitById('requirements').stages.length>=3);assert.ok(unitById('boundaries').stages.length>=4);});
-test('v2 route resolves map and stage',()=>{assert.deepEqual(parseV2Route('#/v2'),{view:'map'});assert.deepEqual(parseV2Route(v2Route('requirements','rule')),{view:'unit',unit:'requirements',stage:'rule'});});
-test('invalid v2 route does not silently render another lesson',()=>{for(const route of ['#/v2/missing','#/v2/failure/missing','#/v2/final/missing'])assert.deepEqual(parseV2Route(route),{view:'notfound'});});
+test('v2 route resolves map and stage',()=>{assert.deepEqual(parseRoute('#/'),{view:'map'});assert.deepEqual(parseRoute(courseRoute('requirements','rule')),{view:'unit',unit:'requirements',stage:'rule'});});
+test('invalid v2 route does not silently render another lesson',()=>{for(const route of ['#/v2/missing','#/v2/failure/missing','#/v2/final/missing'])assert.deepEqual(parseRoute(route),{view:'notfound'});});
 test('unknown stage falls back deterministically',()=>{assert.equal(stageById(unitById('requirements'),'missing').id,'enough');});
 test('choice reveals feedback and optional term',()=>{const stage=stageById(unitById('requirements'),'enough');const result=choose(stage,0);assert.match(result.feedback,/規則/);assert.match(result.term.name,/Constraint/);});
 test('invalid choice does not invent state',()=>{assert.equal(choose(stageById(unitById('requirements'),'enough'),99),null);});
@@ -23,7 +23,7 @@ test('transfer stages do not name the solution in their prompt',()=>{for(const i
 
 test('all eight units now have learner-facing stages',()=>{for(const unit of units)assert.ok(unit.stages.length>=3,`${unit.id} has too few stages`);});
 test('units 6 to 8 end with unprompted transfer practice',()=>{for(const id of ['evidence','scale','evolution'])assert.equal(unitById(id).stages.at(-1).id,'transfer');});
-test('final transfer route and incidents are deterministic',()=>{assert.equal(parseV2Route('#/v2/final').view,'final');assert.equal(finalIncident('unknown').id,'unknown');assert.equal(finalIncident('missing').id,'concurrent');});
+test('final transfer route and incidents are deterministic',()=>{assert.equal(parseRoute('#/final').view,'final');assert.equal(finalIncident('unknown').id,'unknown');assert.equal(finalIncident('missing').id,'concurrent');});
 test('core first-use terms include plain-language definitions',()=>{for(const unit of units){for(const stage of unit.stages){if(stage.term){assert.ok(stage.term.name.length>2);assert.ok(stage.term.plain.length>8);}}}});
 
 test('concurrency simulator makes invariant break observable',()=>{const unsafe=simulateConcurrency({capacity:1,writers:2,mechanism:'none'});assert.equal(unsafe.invalid,1);assert.equal(unsafe.ruleHeld,false);const safe=simulateConcurrency({capacity:1,writers:2,mechanism:'constraint'});assert.equal(safe.invalid,0);assert.equal(safe.rejected,1);});
