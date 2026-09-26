@@ -70,3 +70,23 @@ test('final version incident keeps rollout and compatibility as separate levers'
 
 test('sync overload is represented as waiting requests rather than queue backlog',()=>{const sync=simulateQueue({arrivalRate:800,workerRate:400,workers:1,async:false,seconds:10});assert.equal(sync.queueDepth,0);assert.ok(sync.waitingRequests>0);const asyncRun=simulateQueue({arrivalRate:800,workerRate:400,workers:1,async:true,seconds:10});assert.ok(asyncRun.queueDepth>0);assert.equal(asyncRun.waitingRequests,0);});
 test('final incident prompts describe symptoms without naming the learned mechanisms',()=>{for(const incident of finalIncidents){assert.doesNotMatch(incident.question,/retry|冪等|queue|compatibility|schema|constraint|lock/i);assert.ok(incident.hotspots.length>0);}});
+
+
+test('rendered final navigation links resolve to every next incident',async()=>{
+  const {readFile}=await import('node:fs/promises');
+  const {createSSRApp}=await import('vue');
+  const {renderToString}=await import('vue/server-renderer');
+  const {finalTransfer}=await import('../learning/final-transfer.mjs');
+  const source=await readFile(new URL('../learning/LearningMap.vue',import.meta.url),'utf8');
+  const template=source.slice(source.indexOf('<template>')+10,source.lastIndexOf('</template>'));
+  for(let i=0;i<finalTransfer.incidents.length;i++){
+    const incident=finalTransfer.incidents[i],nextIncident=finalTransfer.incidents[i+1];
+    const app=createSSRApp({template,setup:()=>({routeState:{view:'final'},incident,incidentIndex:i,finalTransfer,nextIncident,courseRoute})});
+    app.component('FinalIntegratedSimulator',{template:'<div></div>'});
+    app.component('LessonLab',{template:'<div></div>'});
+    const html=await renderToString(app);
+    const href=html.match(/href="([^"]+)"[^>]*>(?:注入下一個事故|完成第一輪) →/)[1];
+    assert.equal(href,nextIncident?`#/final/${nextIncident.id}`:'#/');
+    assert.deepEqual(parseRoute(href),nextIncident?{view:'final',incident:nextIncident.id}:{view:'map'});
+  }
+});
