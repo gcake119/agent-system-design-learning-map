@@ -4,11 +4,11 @@ import {simulateFailure} from './models/failure.mjs';
 import {simulateRollout} from './models/rollout.mjs';
 
 export const finalIncidents=[
- {id:'concurrent',title:'兩個 worker 同時更新同一案件',model:'concurrency',question:'先讓系統真的出現衝突，再決定要在哪裡保護案件狀態。'},
- {id:'unknown',title:'文件工作 timeout，但 artifact 狀態未知',model:'failure',question:'不要直接重跑。先比較查證、retry 與冪等各自改變什麼。'},
- {id:'backlog',title:'文件 Queue backlog 持續成長',model:'queue',question:'調整 arrival 與 workers，找出 queue 只是緩衝、capacity 才決定長期 backlog 的地方。'},
- {id:'provider',title:'通知 Provider 持續失敗',model:'failure',question:'觀察 retry 如何增加 downstream load；安全停止比無限重試重要。'},
- {id:'version',title:'新版 job status 讓舊 Frontend 看不懂',model:'rollout',question:'調 rollout、compatibility 與 schema，限制 blast radius 並保留 rollback path。'},
+ {id:'concurrent',title:'兩個 worker 同時更新同一案件',model:'concurrency',question:'系統留下了互相衝突的案件狀態。改一個設定，觀察哪個結果先改變。',hotspots:['workflow','database']},
+ {id:'unknown',title:'文件工作 timeout，但 artifact 狀態未知',model:'failure',question:'畫面沒有拿到結果，但遠端可能已經做完。先用可用設定降低重複效果與未知狀態。',hotspots:['worker','artifact']},
+ {id:'backlog',title:'文件工作越積越多',model:'queue',question:'工作進來的速度長期高於處理速度。找出哪個改動能讓等待停止成長。',hotspots:['queue','worker']},
+ {id:'provider',title:'通知服務持續沒有回應',model:'failure',question:'系統一直再次嘗試，外部服務的呼叫量正在增加。調整設定，觀察負載與未知結果。',hotspots:['notification']},
+ {id:'version',title:'新版 job status 讓舊 Frontend 看不懂',model:'rollout',question:'新舊版本同時在線。改變發布條件，讓受影響範圍與回復能力可見。',hotspots:['ui','workflow','database']},
 ];
 export const finalDefaults={
  concurrent:{writers:2,mechanism:'none'},
