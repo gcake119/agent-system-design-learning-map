@@ -1,14 +1,12 @@
 # System Design 互動式學習地圖
 
-用互動模擬學 System Design：改變需求、系統元件與參數，直接觀察資料正確性、等待時間、失敗、瓶頸與版本相容性如何跟著改變。
+用互動模擬學 System Design。改變需求、系統元件與參數，直接觀察資料正確性、等待時間、失敗、瓶頸與版本相容性如何跟著改變。
 
-課程以 **System Design** 為主體；AI Agent 是協助整理需求、提出假設、比較方案與驗證設計的工具。
-
-> v2 目前在 `learning-map-v2` branch 開發與 Technical QA，入口為 `#/v2`。正式合併前，`main` 的舊版教材仍保留。
+課程主體是 **System Design reasoning**；AI 可以協助整理需求、提出假設、比較方案與驗證設計。
 
 ## 直接使用
 
-如果只是想學習，不需要安裝 Skill，也不需要先會寫程式。
+不需要安裝 Skill，也不需要先會寫程式。
 
 課程從八個問題展開：
 
@@ -21,36 +19,19 @@
 7. 到底是哪裡撐不住？
 8. 新版怎麼換上去，舊東西才不會壞？
 
-每章會讓你操作一個小型 system simulator。改變 workload、元件或 policy 後，系統狀態與 metrics 會一起改變。沒有計分，也不需要先背架構圖。
+每章都有小型 simulator。你會改 workload、元件或 policy，再觀察 system state、metrics 與 trade-off 如何改變。最後用新的案例做 Transfer，不靠背固定架構答案。
 
 ## Fork 後可以做什麼？
 
-Fork 這個 repo 後，可以把它變成自己的學習版本：
+Fork 後可以：
 
-- 修改或增加案例；
-- 針對不懂的概念增加說明與練習；
+- 換成你熟悉的案例；
+- 針對不懂的概念增加說明與實驗；
 - 調整課程順序與深度；
-- 加入自己的專案作 transfer 練習；
-- 搭配 `learning-map` Skill，讓 Agent 依實際學習回饋持續修改教材。
+- 加入自己的專案作 Transfer；
+- 搭配 [learning-map Skill](https://github.com/gcake119/learning-map)，依實際學習回饋持續重構教材。
 
-`learning-map` Skill：  
-https://github.com/gcake119/learning-map
-
-個人的學習紀錄、Learning Handoff 或 Agent 對學習狀況的判斷，建議保存在 private repo 或私人檔案，**不要 commit 到公開 fork**。
-
-## 教材來源
-
-主要參考：
-
-- ByteByteGo Big Archive — System Design 2025 Edition
-- *Designing Data-Intensive Applications*
-- System Design Primer
-- MIT 6.5840 / CMU 15-440 Distributed Systems
-- AWS Well-Architected / Azure Architecture Center
-
-互動方式參考 `gcake119/system-design-simulator`，但本課程使用的是簡化、可重現的教學模型；所有 simulator 數字都是 synthetic assumptions，不代表真實產品 benchmark。
-
-完整來源角色、使用範圍與內容驗證方式見 `docs/source-strategy.md`。
+個人的 Learning Handoff、學習紀錄或 Agent 對學習狀況的判斷，建議留在 private repo／私人檔案，不要 commit 到公開 fork。
 
 ## 本機執行
 
@@ -64,18 +45,24 @@ pnpm test
 pnpm build
 ```
 
-新版入口：`#/v2`
+## 教材與設計來源
 
-## 專案文件
+主要內容參考 ByteByteGo Big Archive — System Design 2025 Edition、*Designing Data-Intensive Applications*、System Design Primer、MIT 6.5840、CMU 15-440、AWS Well-Architected 與 Azure Architecture Center。
 
-- `docs/curriculum-proposal.md`：課綱與學習目標
+互動方式參考 [system-design-simulator](https://github.com/gcake119/system-design-simulator)，但本課程使用簡化、deterministic 的 synthetic teaching models；模擬數字不代表真實產品 benchmark。
+
+完整來源角色與驗證方式見 `docs/source-strategy.md`。
+
+## Repo 結構
+
+- `learning/v2/`：目前課程與 simulator 實作
+- `tests/v2-learning-map.test.mjs`：simulation 與 learning-flow tests
 - `docs/canonical/`：Canonical Content 與 Content Review
-- `docs/source-strategy.md`：教材與參考來源
-- `docs/interaction-redesign-v0.2.md`：Simulator-linked interaction 設計
-- `docs/implementation-v2.md`：實作與 QA 狀態
+- `docs/curriculum-proposal.md`：課綱與學習目標
+- `docs/source-strategy.md`：教材來源
+- `docs/interaction-redesign-v0.2.md`：互動設計
+- `docs/implementation-v2.md`：Technical QA 紀錄
 
 ## License
 
-MIT License。可以 Fork、修改與再發布；請保留原始授權聲明。
-
-若修改來自私人 Learning Handoff，公開回饋或 PR 前請先移除個人資訊。
+MIT License。
