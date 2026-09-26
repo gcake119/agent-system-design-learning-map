@@ -55,13 +55,13 @@ pnpm build
 
 ## Repo 結構
 
-- `learning/v2/`：目前課程與 simulator 實作
-- `tests/v2-learning-map.test.mjs`：simulation 與 learning-flow tests
+- `learning/`：課程與 simulator 實作
+- `tests/learning-map.test.mjs`：simulation 與 learning-flow tests
 - `docs/canonical/`：Canonical Content 與 Content Review
 - `docs/curriculum-proposal.md`：課綱與學習目標
 - `docs/source-strategy.md`：教材來源
 - `docs/interaction-redesign-v0.2.md`：互動設計
-- `docs/implementation-v2.md`：Technical QA 紀錄
+- `docs/implementation.md`：Technical QA 紀錄
 
 ## License
 
