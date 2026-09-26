@@ -1,9 +1,5 @@
 import { createApp } from 'vue'
-import RouteShell from './RouteShell.vue'
-import './style.css'
-import './animation.css'
-import './diagram.css'
-import './practice.css'
-createApp(RouteShell).mount('#app')
+import LearningMapV2 from './v2/LearningMapV2.vue'
+import './v2/v2.css'
 
-import './system-lab.css';
+createApp(LearningMapV2).mount('#app')
