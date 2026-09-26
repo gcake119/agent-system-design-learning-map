@@ -5,6 +5,7 @@ import {parseV2Route,v2Route,choose,finalIncident} from './interaction.mjs';
 import {finalTransfer} from './final-transfer.mjs';
 import LessonLab from './components/LessonLab.vue';
 import FinalIntegratedSimulator from './components/FinalIntegratedSimulator.vue';
+import {resetLabSession} from './sim/session.mjs';
 const routeState=ref(parseV2Route(location.hash)||{view:'map'}),selected=ref(-1),result=ref(null);
 const pageHeading=ref(null);
 const unit=computed(()=>routeState.value.view==='unit'?unitById(routeState.value.unit):null);
@@ -18,6 +19,7 @@ function sync(){routeState.value=parseV2Route(location.hash)||{view:'map'};selec
 function select(i){selected.value=i;result.value=choose(stage.value,i)}
 function selectIncident(i){selected.value=i;const o=incident.value.options[i];result.value=o?{selected:i,feedback:o.feedback}:null}
 function restart(){selected.value=-1;result.value=null}
+function resetExperiment(){if(unit.value){resetLabSession(unit.value.id);selected.value=-1;result.value=null}}
 onMounted(()=>window.addEventListener('hashchange',sync));onUnmounted(()=>window.removeEventListener('hashchange',sync));
 </script>
 <template><div class="v2-shell"><header class="v2-header"><a :href="v2Route()" class="v2-brand"><b>System Design</b><span>互動式學習地圖</span></a><a :href="v2Route()" class="v2-map-link">八個問題</a></header><main>
@@ -26,5 +28,5 @@ onMounted(()=>window.addEventListener('hashchange',sync));onUnmounted(()=>window
 <section v-else-if="routeState.view==='notfound'" class="v2-empty"><h1 ref="pageHeading" tabindex="-1">找不到這一頁</h1><p class="v2-lead">請從八個問題重新選擇。</p><a class="v2-primary" :href="v2Route()">回到八個問題 →</a></section>
 <section v-else-if="unit&&!stage" class="v2-empty"><p class="v2-kicker">UNIT {{unit.number}}</p><h1>{{unit.title}}</h1><p class="v2-lead">{{unit.summary}}</p><p class="v2-note">這個單元正在製作中。你可以先從前兩章開始。</p><a class="v2-secondary" :href="v2Route()">← 回八個問題</a></section>
 <article v-else-if="stage" class="v2-lesson"><nav class="v2-breadcrumb"><a :href="v2Route()">八個問題</a><span>／</span><span>Unit {{unit.number}}</span><span>／</span><span>{{stageIndex+1}} / {{unit.stages.length}}</span></nav><p class="v2-kicker">{{stage.eyebrow}}</p><h1 ref="pageHeading" tabindex="-1">{{stage.title}}</h1><p class="v2-lead">{{stage.intro}}</p><LessonLab :unit-id="unit.id" :stage-id="stage.id" />
-<section class="v2-board v2-reflection"><div class="v2-question"><span>現在先想</span><h2>{{stage.prompt}}</h2></div><div v-if="stage.id!=='transfer'" class="v2-options"><button v-for="(option,i) in stage.options" :key="option.label" :aria-pressed="selected===i" @click="select(i)"><span>{{option.label}}</span><b>→</b></button></div><div v-if="result" class="v2-result" role="status"><p class="v2-result-label">看看這個選擇帶來什麼</p><p>{{result.feedback}}</p><div v-if="result.term" class="v2-term"><strong>{{result.term.name}}</strong><span>{{result.term.plain}}</span></div></div><p v-else-if="stage.id==='transfer'" class="v2-note">改動上方情境的設定，觀察系統狀態與結果，再用自己的話回答這個問題。</p><p v-else class="v2-note">沒有計分。先做一個判斷，再看它會把設計帶到哪裡。</p></section><div class="v2-actions"><button v-if="result" class="v2-secondary" @click="restart">重新比較</button><a v-if="nextStage" class="v2-primary" :href="v2Route(unit.id,nextStage.id)">繼續：{{nextStage.title}} →</a><a v-else class="v2-primary" :href="v2Route()">完成本章 →</a></div></article>
+<section class="v2-board v2-reflection"><div class="v2-question"><span>現在先想</span><h2>{{stage.prompt}}</h2></div><div v-if="stage.id!=='transfer'" class="v2-options"><button v-for="(option,i) in stage.options" :key="option.label" :aria-pressed="selected===i" @click="select(i)"><span>{{option.label}}</span><b>→</b></button></div><div v-if="result" class="v2-result" role="status"><p class="v2-result-label">看看這個選擇帶來什麼</p><p>{{result.feedback}}</p><div v-if="result.term" class="v2-term"><strong>{{result.term.name}}</strong><span>{{result.term.plain}}</span></div></div><p v-else-if="stage.id==='transfer'" class="v2-note">改動上方情境的設定，觀察系統狀態與結果，再用自己的話回答這個問題。</p><p v-else class="v2-note">沒有計分。先做一個判斷，再看它會把設計帶到哪裡。</p></section><div class="v2-actions"><button class="v2-secondary" @click="resetExperiment">重設本章實驗</button><button v-if="result" class="v2-secondary" @click="restart">清除反思選擇</button><a v-if="nextStage" class="v2-primary" :href="v2Route(unit.id,nextStage.id)">繼續：{{nextStage.title}} →</a><a v-else class="v2-primary" :href="v2Route()">完成本章 →</a></div></article>
 </main><footer>所有案例與數字都是教學用合成情境；先理解機制，再把它帶回自己的系統。</footer></div></template>
