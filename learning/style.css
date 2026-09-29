@@ -85,15 +85,15 @@ body{margin:0}
 .flow-investigation__modes button{border:1px solid var(--line,#d8dde6);border-radius:999px;background:transparent;padding:8px 12px;cursor:pointer;font:inherit}
 .flow-investigation__modes button.selected{border-color:currentColor;font-weight:750}
 .flow-investigation__surface{display:grid;grid-template-columns:minmax(0,2fr) minmax(240px,1fr);gap:16px}
-.flow-investigation__graph{display:flex;align-items:stretch;gap:8px;overflow-x:auto;padding:14px;border-radius:16px;background:rgba(127,127,127,.06)}
-.flow-node{min-width:132px;max-width:168px;display:flex;flex-direction:column;gap:5px;padding:13px;border:1px solid var(--line,#d8dde6);border-radius:14px;background:var(--surface,#fff);transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
-.flow-node strong{font-size:.9rem}
-.flow-node span{font-size:.76rem;line-height:1.4;opacity:.72}
-.flow-node small{margin-top:auto;font-size:.62rem;font-weight:800;letter-spacing:.06em}
+.flow-investigation__graph{display:flex;align-items:stretch;gap:10px;overflow-x:auto;padding:14px;border-radius:16px;background:rgba(127,127,127,.06)}
+.flow-node{min-width:220px;max-width:280px;display:flex;flex-direction:column;gap:7px;padding:16px;border:1px solid var(--line,#d8dde6);border-radius:14px;background:var(--surface,#fff);transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.flow-node strong{font-size:1rem;line-height:1.45}
+.flow-node span{font-size:.9rem;line-height:1.55;opacity:.78}
+.flow-node small{margin-top:auto;font-size:.76rem;line-height:1.45;font-weight:800;letter-spacing:.04em}
 .flow-node__details{display:grid;gap:7px;margin:6px 0 0;padding-top:8px;border-top:1px solid var(--line,#d8dde6)}
 .flow-node__details>div{display:grid;grid-template-columns:3.2em minmax(0,1fr);gap:6px;align-items:start}
-.flow-node__details dt{font-size:.68rem;font-weight:800;opacity:.7}
-.flow-node__details dd{margin:0;font-size:.7rem;line-height:1.45;overflow-wrap:anywhere}
+.flow-node__details dt{font-size:.82rem;font-weight:800;line-height:1.5;opacity:.78}
+.flow-node__details dd{margin:0;font-size:.88rem;line-height:1.6;overflow-wrap:anywhere}
 .flow-panel__help{margin:8px 0 0;font-size:.82rem;line-height:1.6;opacity:.78}
 .flow-panel__focus{margin:10px 0 0;padding:9px 10px;border-radius:9px;background:rgba(127,127,127,.06);font-size:.82rem;line-height:1.55}
 .flow-panel__focus strong{margin-right:.35em}
@@ -133,14 +133,14 @@ body{margin:0}
 }
 
 .flow-investigation__graph{
-  overflow-x:visible;
+  overflow-x:auto;
   overflow-y:visible;
 }
 
 .flow-node{
-  flex:1 1 0;
-  min-width:0;
-  max-width:none;
+  flex:0 0 240px;
+  min-width:220px;
+  max-width:280px;
 }
 
 .flow-edge{
