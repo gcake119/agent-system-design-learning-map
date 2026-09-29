@@ -59,7 +59,6 @@ onUnmounted(()=>window.removeEventListener('hashchange',sync));
 <div class="v2-shell">
   <header class="v2-header">
     <a :href="courseRoute()" class="v2-brand"><b>System Design</b></a>
-    <a :href="courseRoute()" class="v2-map-link">課程地圖</a>
   </header>
 
   <main>
