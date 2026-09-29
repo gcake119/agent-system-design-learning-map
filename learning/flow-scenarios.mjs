@@ -65,7 +65,7 @@ export const flowScenarios={
     {id:'replica',label:'Read replica',role:'複本'},
     {id:'projection',label:'Async view',role:'衍生資料'}
   ],[
-    {id:'fresh',label:'全部 v3',active:'db',status:'ok',metrics:['Primary v3','Cache v3','Replica v3'],evidence:['所有 read path 已追上'],takeaway:'一致不是抽象名詞；可以直接描述各 read path 看見哪個版本。'},
+    {id:'fresh',label:'全部 v3',active:'db',status:'ok',metrics:['Primary v3','Cache v3','Replica v3'],evidence:['所有 read path 已追上','同一 record 在 browser / cache / replica 都回報 v3'],takeaway:'一致不是抽象名詞；可以直接描述各 read path 看見哪個版本。'},
     {id:'cachelag',label:'Cache 還是 v2',active:'cache',status:'bad',metrics:['Primary v3','Cache v2'],evidence:['write 已完成','另一頁讀 cache 回舊值'],takeaway:'第一個舊版本出現在 cache path，修法取決於 freshness requirement。'},
     {id:'replicalag',label:'Replica lag',active:'replica',status:'bad',metrics:['Primary v3','Replica v2','Lag 4.2 s'],evidence:['write primary 成功','read-after-write 落到 replica'],takeaway:'Replication 可改善 read capacity / availability，也會引入可見的 propagation lag。'},
     {id:'projectionlag',label:'Async view lag',active:'projection',status:'bad',metrics:['Primary v3','Projection v1'],evidence:['event 已產生','projection consumer backlog'],takeaway:'資料正確性要看「哪一份資料在什麼時間點被拿來做什麼決策」。'}
