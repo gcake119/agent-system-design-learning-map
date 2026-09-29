@@ -2,7 +2,7 @@
 import {computed,ref,watch} from 'vue';
 import {flowScenarioFor} from '../flow-scenarios.mjs';
 
-const props=defineProps({unitId:String,resetKey:{type:Number,default:0}});
+const props=defineProps({unitId:String});
 
 const nodeGuides={
   browser:{input:'使用者的點擊、輸入，以及 API 回傳結果',work:'保存目前畫面需要的資料，觸發操作，接收 response 後更新 UI',output:'送出 request，或把新的 state 呈現在畫面上',observe:'click 是否觸發、Network request、response、畫面是否更新'},
@@ -27,7 +27,6 @@ watch(()=>props.unitId,()=>{selectedMode.value=0;});
 const mode=computed(()=>scenario.value?.modes[selectedMode.value]||null);
 const activeNode=computed(()=>scenario.value?.nodes.find(node=>node.id===mode.value?.active)||null);
 function nodeGuide(node){return nodeGuides[node.id]||{input:'上一個節點送進來的資料或事件',work:node.role||'處理目前這一段工作',output:'交給下一個節點的結果',observe:'這一層的 input、output、狀態與錯誤'};}
-watch(()=>props.resetKey,()=>{selectedMode.value=0;});
 function nodeClass(node){
   if(!mode.value)return '';
   if(node.id===mode.value.active)return mode.value.status==='bad'?'is-bad':mode.value.status==='ok'?'is-ok':'is-active';
@@ -63,10 +62,10 @@ function nodeClass(node){
           <strong>{{node.label}}</strong>
           <span>{{node.role}}</span>
           <dl class="flow-node__details">
-            <div><dt>收到</dt><dd>{{nodeGuide(node).input}}</dd></div>
-            <div><dt>處理</dt><dd>{{nodeGuide(node).work}}</dd></div>
-            <div><dt>送出</dt><dd>{{nodeGuide(node).output}}</dd></div>
-            <div><dt>可觀察</dt><dd>{{nodeGuide(node).observe}}</dd></div>
+            <div><dt class="flow-pill flow-pill--input">收到</dt><dd>{{nodeGuide(node).input}}</dd></div>
+            <div><dt class="flow-pill flow-pill--work">處理</dt><dd>{{nodeGuide(node).work}}</dd></div>
+            <div><dt class="flow-pill flow-pill--output">送出</dt><dd>{{nodeGuide(node).output}}</dd></div>
+            <div><dt class="flow-pill flow-pill--observe">可觀察</dt><dd>{{nodeGuide(node).observe}}</dd></div>
           </dl>
           <small v-if="mode?.active===node.id">
             {{mode.status==='bad'?'FIRST VISIBLE ABNORMALITY':mode.status==='ok'?'CONFIRMED STATE':'CURRENT STEP'}}
@@ -101,21 +100,6 @@ function nodeClass(node){
     <p>{{mode?.takeaway}}</p>
   </div>
 
-  <details class="flow-investigation__framework">
-    <summary>用全課共同框架檢查這個情境</summary>
-    <ol>
-      <li>使用者看到什麼現象？</li>
-      <li>正常 flow 是什麼？</li>
-      <li>哪一層第一次出現異常？</li>
-      <li>這一層 input 正常嗎？</li>
-      <li>這一層 output 正常嗎？</li>
-      <li>有什麼 evidence？</li>
-      <li>direct cause 是什麼？</li>
-      <li>root cause 可能是什麼？</li>
-      <li>可以在哪一層修？</li>
-      <li>修正會帶來什麼 trade-off？</li>
-      <li>如何驗證真的修好了？</li>
-    </ol>
-  </details>
+
 </section>
 </template>
