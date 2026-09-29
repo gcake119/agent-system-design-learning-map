@@ -14,7 +14,7 @@ import EvidenceSimulator from './EvidenceSimulator.vue';
 import CapacitySimulator from './CapacitySimulator.vue';
 import RolloutSimulator from './RolloutSimulator.vue';
 
-const props=defineProps({unitId:String,stageId:String,resetKey:{type:Number,default:0}});
+const props=defineProps({unitId:String,stageId:String});
 const flowScenario=computed(()=>flowScenarioFor(props.unitId));
 const lab=computed(()=>flowScenario.value?null:labFor(props.unitId,props.stageId));
 const components={requirements:RequirementSimulator,boundary:BoundarySimulator,concurrency:ConcurrencySimulator,queue:QueueSimulator,failure:FailureSimulator,evidence:EvidenceSimulator,capacity:CapacitySimulator,rollout:RolloutSimulator};
@@ -31,7 +31,7 @@ watch(
 </script>
 
 <template>
-  <FlowInvestigationLab v-if="flowScenario" :unit-id="unitId" :reset-key="resetKey" />
+  <FlowInvestigationLab v-if="flowScenario" :unit-id="unitId" />
   <div v-else-if="lab&&active" class="lesson-lab-host">
     <section v-if="transfer" class="transfer-context">
       <div>
