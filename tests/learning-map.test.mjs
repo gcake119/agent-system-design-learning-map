@@ -9,6 +9,7 @@ import {simulateQueue} from '../learning/sim/models/queue.mjs';
 import {simulateFailure} from '../learning/sim/models/failure.mjs';
 import {simulateCapacity} from '../learning/sim/models/capacity.mjs';
 import {finalIncidents,finalDefaults,simulateFinal} from '../learning/sim/final-integrated.mjs';
+import {emptyProgress,recordStage,visitedStages} from '../learning/progress.mjs';
 
 const ids=['flow','locate','latency','cache','queue','consistency','evidence','redesign'];
 
@@ -114,4 +115,14 @@ test('final integrated transfer still exposes mixed incidents',()=>{
   const overloaded=simulateFinal('backlog',finalDefaults.backlog);
   const scaled=simulateFinal('backlog',{...finalDefaults.backlog,workers:4});
   assert.ok(overloaded.queueDepth>scaled.queueDepth);
+});
+
+
+test('learning progress records visited stages without treating them as mastery',()=>{
+  let progress=emptyProgress();
+  progress=recordStage(progress,'flow','observe');
+  progress=recordStage(progress,'flow','reason');
+  progress=recordStage(progress,'flow','reason');
+  assert.deepEqual(visitedStages(progress,'flow'),['observe','reason']);
+  assert.deepEqual(progress.last,{unitId:'flow',stageId:'reason'});
 });
