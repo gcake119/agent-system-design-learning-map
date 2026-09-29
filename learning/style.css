@@ -184,3 +184,39 @@ body{margin:0}
     min-width:0;
   }
 }
+
+
+/* Human Learning Review refinements */
+.flow-pill{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:max-content;
+  min-width:3.6em;
+  padding:3px 8px;
+  border-radius:999px;
+  font-size:.78rem!important;
+  line-height:1.35!important;
+  font-weight:800!important;
+  opacity:1!important;
+  border:1px solid transparent;
+}
+.flow-pill--input{background:#e8f1ff;color:#244a78;border-color:#b9d2f3}
+.flow-pill--work{background:#fff2d9;color:#775315;border-color:#ead19d}
+.flow-pill--output{background:#e7f5ec;color:#285e3f;border-color:#b7d9c3}
+.flow-pill--observe{background:#f1eafb;color:#5a3e78;border-color:#d2c0e8}
+
+.learning-progress-note{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px 12px;
+  margin:0 0 20px;
+  padding:13px 15px;
+  border:1px solid var(--v2-line);
+  border-radius:10px;
+  background:var(--v2-card);
+  color:var(--v2-muted);
+  line-height:1.65;
+}
+.learning-progress-note strong{color:var(--v2-ink)}
+.learning-progress-note span{max-width:52em}
