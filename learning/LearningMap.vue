@@ -58,13 +58,12 @@ onUnmounted(()=>window.removeEventListener('hashchange',sync));
 <template>
 <div class="v2-shell">
   <header class="v2-header">
-    <a :href="courseRoute()" class="v2-brand"><b>System Design</b><span>Flow Investigation Learning Map</span></a>
-    <a :href="courseRoute()" class="v2-map-link">系統調查地圖</a>
+    <a :href="courseRoute()" class="v2-brand"><b>System Design</b></a>
+    <a :href="courseRoute()" class="v2-map-link">課程地圖</a>
   </header>
 
   <main>
     <section v-if="routeState.view==='map'" class="v2-home">
-      <p class="v2-kicker">SYSTEM DESIGN · LEARNING MAP</p>
       <h1 ref="pageHeading" tabindex="-1">{{course.subtitle}}</h1>
       <p class="v2-lead">{{course.intro}}</p>
 
