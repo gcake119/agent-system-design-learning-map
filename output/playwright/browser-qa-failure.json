@@ -1,0 +1,4 @@
+{
+  "synchronousFailureWait": "PASS",
+  "asynchronousAcceptanceDespiteFailure": "PASS"
+}

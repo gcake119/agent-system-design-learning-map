@@ -1,0 +1,81 @@
+async (page) => {
+ const base='http://127.0.0.1:4173/agent-system-design-learning-map/';
+ const ids=['flow','locate','latency','cache','queue','consistency','evidence','redesign'];
+ const routes=['#/',...ids.flatMap(id=>['observe','reason','transfer'].map(s=>'#/'+id+'/'+s)),...['concurrent','unknown','backlog','provider','version'].map(i=>'#/final/'+i),'#/missing'];
+ const reports=[],errors=[];
+ page.on('pageerror',e=>errors.push(String(e)));
+ for(const viewport of [{width:1440,height:960},{width:900,height:800},{width:390,height:844}]){
+  await page.setViewportSize(viewport);
+  for(const route of routes){
+   await page.goto(base+route);await page.locator('h1').waitFor();
+   const data=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth>innerWidth,heading:document.querySelector('h1')?.textContent,scrollWidth:document.documentElement.scrollWidth,width:innerWidth,reading:!!document.querySelector('.required-reading'),transfer:!!document.querySelector('.transfer-brief'),nodes:document.querySelectorAll('.experiment-node').length,nav:document.querySelectorAll('.chapter-nav a').length}));
+   if(data.overflow)throw Error('overflow '+route+' '+viewport.width+' '+JSON.stringify(data));
+   if(route.endsWith('/reason')&&!data.reading)throw Error('missing required reading '+route);
+   if(route.endsWith('/transfer')&&!data.transfer)throw Error('missing transfer '+route);
+   if(route!=='#/'&&route!=='#/missing'&&data.nodes<4)throw Error('missing model '+route);
+   reports.push({route,viewport:viewport.width,...data});
+  }
+ }
+ console.log('Matrix routes checked: '+reports.length);
+ await page.setViewportSize({width:1440,height:960});
+ await page.goto(base+'#/cache/observe');
+ await page.getByRole('button',{name:'重設目前實驗',exact:true}).click();
+ if(await page.getByLabel('副本命中比例（％）').count())throw Error('advanced control disclosed early');
+ await page.getByLabel('使用讀取副本',{exact:true}).check();
+ if(!(await page.locator('.experiment-metrics').innerText()).includes('100／秒'))throw Error('cache consequence absent');
+ await page.getByRole('button',{name:'保存現在作基準',exact:true}).click();
+ await page.getByRole('link',{name:'下一小節：必要機制閱讀 →',exact:true}).click();await page.waitForFunction(()=>document.activeElement?.tagName==='H1');
+ if(!await page.getByLabel('使用讀取副本',{exact:true}).isChecked())throw Error('state lost across stage');
+ await page.getByLabel('副本命中比例（％）').focus();await page.keyboard.press('End');
+ await page.getByRole('textbox').fill('我會先查資料版本，再核對來源負載。');
+ await page.reload();
+ if(await page.getByLabel('副本命中比例（％）').inputValue()!=='100')throw Error('parameter persistence');
+ if(await page.getByRole('textbox').inputValue()!=='我會先查資料版本，再核對來源負載。')throw Error('note persistence');
+ if(!(await page.locator('.experiment-metrics').innerText()).includes('基準'))throw Error('baseline persistence');
+ await page.getByRole('link',{name:'上一小節',exact:false}).click();await page.waitForFunction(()=>document.activeElement?.tagName==='H1');
+ if(await page.evaluate(()=>document.activeElement?.tagName)!=='H1')throw Error('navigation focus not H1');
+ await page.getByRole('link',{name:'下一小節：必要機制閱讀 →',exact:true}).click();await page.waitForFunction(()=>document.activeElement?.tagName==='H1');
+ await page.getByRole('link',{name:'下一小節：換題應用 →',exact:true}).click();await page.waitForFunction(()=>document.activeElement?.tagName==='H1');
+ if(await page.getByLabel('使用讀取副本',{exact:true}).isChecked())throw Error('transfer is not isolated');
+ if(!(await page.locator('.transfer-brief').innerText()).includes('可預約時段'))throw Error('domain transfer missing');
+ await page.getByRole('button',{name:'重設目前實驗',exact:true}).click();
+ await page.goto(base+'#/cache/reason');
+ if(!await page.getByLabel('使用讀取副本',{exact:true}).isChecked())throw Error('transfer reset erased teaching');
+ await page.getByRole('button',{name:/^讀取副本/}).click();
+ await page.getByRole('button',{name:'複製證據文字',exact:true}).click();
+ await page.getByRole('status').filter({hasText:'已複製'}).waitFor();
+ await page.goto(base+'#/queue/reason');
+ await page.getByRole('button',{name:'重設目前實驗',exact:true}).click();
+ const before=await page.locator('.experiment-metrics').innerText();
+ await page.getByLabel('背景工作者數').focus();await page.keyboard.press('End');
+ const after=await page.locator('.experiment-metrics').innerText();if(before===after)throw Error('worker no visible change');
+ await page.getByLabel('先回覆已接收，稍後追蹤完成',{exact:true}).check();
+ if(!(await page.locator('.experiment-edges').innerText()).includes('先回覆接收'))throw Error('async graph no consequence');
+ await page.getByLabel('工作者在觀察視窗內失敗',{exact:true}).check();
+ if(!(await page.locator('.experiment-nodes').innerText()).includes('處理失敗'))throw Error('failure not on node');
+ await page.goto(base+'#/evidence/reason');
+ await page.getByRole('button',{name:'重設目前實驗',exact:true}).click();
+ for(const value of ['logs','metrics','trace','business']){await page.getByLabel('這次要看哪種證據').selectOption(value);if(!(await page.locator('.experiment-metrics').innerText()).includes('未知'))throw Error('evidence switched outcome');}
+ await page.getByLabel('另外查詢外部結果收據',{exact:true}).check();
+ if(!(await page.locator('.experiment-metrics').innerText()).includes('另外查證已完成'))throw Error('receipt not visible');
+ await page.goto(base+'#/final');
+ await page.getByRole('button',{name:'重開整合練習',exact:true}).click();
+ await page.getByLabel('儲存可重用的讀取副本',{exact:true}).check();
+ await page.getByRole('link',{name:'下一個現象 →',exact:true}).click();await page.waitForFunction(()=>document.activeElement?.tagName==='H1');
+ if(!await page.getByLabel('儲存可重用的讀取副本',{exact:true}).isChecked())throw Error('final lost design');
+ await page.reload();if(!await page.getByLabel('儲存可重用的讀取副本',{exact:true}).isChecked())throw Error('final reload lost design');
+ await page.getByRole('link',{name:'上一個現象',exact:false}).click();await page.waitForFunction(()=>document.activeElement?.tagName==='H1');
+ await page.getByRole('button',{name:'重開整合練習',exact:true}).click();
+ if(await page.getByLabel('儲存可重用的讀取副本',{exact:true}).isChecked())throw Error('final restart failed');
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto(base+'#/consistency/reason');
+ const motion=await page.locator('.experiment-node').first().evaluate(el=>({animation:getComputedStyle(el).animationDuration,transition:getComputedStyle(el).transitionDuration}));
+ if(motion.animation!=='0s'||motion.transition!=='0s')throw Error('reduced motion '+JSON.stringify(motion));
+ await page.getByLabel('主資料更新後觀察時間（秒）').focus();await page.keyboard.press('End');
+ if(!(await page.locator('.experiment-metrics').innerText()).includes('v3'))throw Error('reduced-motion info missing');
+ await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:'output/playwright/desktop-consistency.png',fullPage:true});
+ await page.setViewportSize({width:390,height:844});await page.goto(base+'#/queue/transfer');
+ await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:'output/playwright/mobile-transfer.png',fullPage:true});
+ if(errors.length)throw Error(errors.join('\n'));
+ return {routesChecked:reports.length,viewports:[1440,900,390],errors,interaction:'PASS',motion,report:reports};
+}

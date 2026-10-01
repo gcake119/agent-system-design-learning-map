@@ -1,0 +1,6 @@
+{
+  "keyboardSkip": "PASS",
+  "keyboardNavigationFocus": "PASS",
+  "blockedStorageFallback": "PASS",
+  "errors": []
+}
