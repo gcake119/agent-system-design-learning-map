@@ -1,105 +1,76 @@
 <script setup>
 import {computed,ref,watch} from 'vue';
-import {flowScenarioFor} from '../flow-scenarios.mjs';
-
-const props=defineProps({unitId:String});
-
-const nodeGuides={
-  browser:{input:'使用者的點擊、輸入，以及 API 回傳結果',work:'保存目前畫面需要的資料，觸發操作，接收 response 後更新 UI',output:'送出 request，或把新的 state 呈現在畫面上',observe:'click 是否觸發、Network request、response、畫面是否更新'},
-  frontend:{input:'使用者事件、表單資料、API response',work:'處理事件與驗證，更新 frontend state，依 state 決定 render',output:'HTTP request，或新的畫面／DOM 狀態',observe:'event handler、request payload、frontend state、render 結果、console error'},
-  client:{input:'使用者操作與伺服器回應',work:'呈現使用者看到的狀態與錯誤',output:'下一個 request 或畫面結果',observe:'使用者症狀、Network、console、UI state'},
-  network:{input:'要傳送的 request / response bytes',work:'在 client 與 server 之間傳輸資料',output:'送達另一端的 request / response',observe:'RTT、transfer time、timeout、封包是否送達'},
-  api:{input:'HTTP method、headers、body',work:'做 routing、validation、auth，將有效 request 交給 backend',output:'backend command 或 HTTP response',observe:'status code、validation error、request log、route 命中'},
-  backend:{input:'已通過邊界檢查的 command / query',work:'執行業務規則，呼叫 DB、cache、queue 或外部服務',output:'資料變更、dependency call 或 response data',observe:'application log、trace span、service test、dependency result'},
-  db:{input:'query / command / transaction',work:'查詢或更新權威資料',output:'rows、constraint result、commit / rollback',observe:'row 是否存在、query latency、constraint error、transaction result'},
-  cache:{input:'cache key、讀寫要求',work:'回傳或保存可重用副本',output:'hit / miss / cached value',observe:'hit rate、版本／freshness、eviction、origin load'},
-  queue:{input:'要延後處理的 job / message',work:'保存工作並交給 worker',output:'accepted job、等待中的 backlog',observe:'queue depth、queue age、enqueue 成功、delivery / retry'},
-  worker:{input:'queue 送來的 job',work:'在背景執行較久或非同步工作',output:'result、side effect、failure / retry state',observe:'worker log、job state、retry count、artifact 是否產生'},
-  result:{input:'worker 完成的輸出',work:'保存或提供完成產物',output:'可供使用者或其他系統讀取的結果',observe:'artifact 是否存在、版本、完成時間'},
-  replica:{input:'primary 傳來的資料變更',work:'保存可供讀取的複本',output:'read result',observe:'replication lag、讀到的版本、同步狀態'},
-  projection:{input:'event / change stream',work:'把權威資料轉成另一種查詢或顯示格式',output:'衍生 view',observe:'consumer lag、projection version、backlog'},
-  external:{input:'系統送出的第三方 request',work:'由外部服務執行自己的工作',output:'第三方 response / side effect',observe:'timeout、status、provider latency、provider id'},
-  provider:{input:'系統送出的 provider request',work:'由外部 provider 執行工作',output:'provider response / side effect',observe:'timeout、provider status、trace span、provider id'}
-};
-const scenario=computed(()=>flowScenarioFor(props.unitId));
-const selectedMode=ref(0);
-watch(()=>props.unitId,()=>{selectedMode.value=0;});
-const mode=computed(()=>scenario.value?.modes[selectedMode.value]||null);
-const activeNode=computed(()=>scenario.value?.nodes.find(node=>node.id===mode.value?.active)||null);
-function nodeGuide(node){return nodeGuides[node.id]||{input:'上一個節點送進來的資料或事件',work:node.role||'處理目前這一段工作',output:'交給下一個節點的結果',observe:'這一層的 input、output、狀態與錯誤'};}
-function nodeClass(node){
-  if(!mode.value)return '';
-  if(node.id===mode.value.active)return mode.value.status==='bad'?'is-bad':mode.value.status==='ok'?'is-ok':'is-active';
-  return '';
-}
+import {experimentControls,experimentDefaults,simulateExperiment} from '../experiment-model.mjs';
+import {loadExperiment,saveExperiment} from '../experiment-storage.mjs';
+import {lessonContent} from '../lesson-content.mjs';
+const props=defineProps({unitId:String,stageId:{type:String,default:'observe'},incidentIndex:{type:Number,default:-1},final:{type:Boolean,default:false},prompt:String});
+const context=computed(()=>props.final?'final':props.stageId==='transfer'?'transfer':'teaching');
+const modelContext=computed(()=>context.value==='final'?'transfer':context.value);
+const experiment=ref({state:{},note:'',selected:'',baseline:null});
+const saved=ref(true);
+function load(){experiment.value=loadExperiment(props.unitId,context.value);if(props.final)experiment.value.state.incident=props.incidentIndex;saved.value=saveExperiment(props.unitId,context.value,experiment.value);}
+watch(()=>[props.unitId,context.value],load,{immediate:true});
+watch(()=>props.incidentIndex,i=>{if(props.final)experiment.value.state.incident=i;});
+watch(experiment,()=>{saved.value=saveExperiment(props.unitId,context.value,experiment.value);},{deep:true,flush:'sync'});
+const content=computed(()=>lessonContent[props.unitId]);
+const result=computed(()=>simulateExperiment(props.unitId,experiment.value.state,modelContext.value));
+const selected=computed(()=>result.value.nodes.find(n=>n.id===experiment.value.selected)||result.value.nodes[0]);
+const controls=computed(()=>experimentControls[props.unitId].filter(c=>(props.stageId!=='observe'||!c.advanced)&&(!props.final||c.key!=='incident')));
+const baseline=computed(()=>experiment.value.baseline?simulateExperiment(props.unitId,experiment.value.baseline,modelContext.value):null);
+const statusText={ok:'已確認',waiting:'等待／未到達',bad:'輸出異常',attention:'需要比較要求',idle:'本次未使用',unknown:'結果未知'};
+function label(id){return result.value.nodes.find(n=>n.id===id)?.label||id;}
+function reset(){experiment.value={state:experimentDefaults(props.unitId,modelContext.value),selected:'',note:'',baseline:null};if(props.final)experiment.value.state.incident=props.incidentIndex;}
+function remember(){experiment.value.baseline={...experiment.value.state};}
+defineExpose({reset});
+const copyStatus=ref('');
+async function copyEvidence(){try{await navigator.clipboard.writeText(selected.value.evidence.join('\n'));copyStatus.value='已複製';}catch{copyStatus.value='無法自動複製，請選取下方文字複製';}}
 </script>
 
 <template>
-<section v-if="scenario" class="flow-investigation">
-  <header class="flow-investigation__header">
-    <div>
-      <span class="flow-investigation__eyebrow">SYSTEM FLOW LAB</span>
-      <h2>{{scenario.title}}</h2>
-      <p>{{scenario.question}}</p>
-    </div>
-  </header>
-
-  <div class="flow-investigation__modes" aria-label="情境切換">
-    <button
-      v-for="(item,index) in scenario.modes"
-      :key="item.id"
-      type="button"
-      :class="{selected:selectedMode===index}"
-      :aria-pressed="selectedMode===index"
-      @click="selectedMode=index"
-    >{{item.label}}</button>
+<section class="experiment" aria-label="系統實驗">
+  <div v-if="stageId==='transfer'&&!final" class="transfer-brief">
+    <p class="eyebrow">換一個問題</p><h2>{{content.transfer.title}}</h2>
+    <p>{{content.transfer.problem}}</p><p class="muted">{{content.transfer.assumptions}}</p>
   </div>
-
-  <div class="flow-investigation__surface">
-    <div class="flow-investigation__graph" aria-label="system flow">
-      <template v-for="(node,index) in scenario.nodes" :key="node.id">
-        <div :class="['flow-node',nodeClass(node)]">
-          <strong>{{node.label}}</strong>
-          <span>{{node.role}}</span>
-          <dl class="flow-node__details">
-            <div><dt class="flow-pill flow-pill--input">收到</dt><dd>{{nodeGuide(node).input}}</dd></div>
-            <div><dt class="flow-pill flow-pill--work">處理</dt><dd>{{nodeGuide(node).work}}</dd></div>
-            <div><dt class="flow-pill flow-pill--output">送出</dt><dd>{{nodeGuide(node).output}}</dd></div>
-            <div><dt class="flow-pill flow-pill--observe">可觀察</dt><dd>{{nodeGuide(node).observe}}</dd></div>
-          </dl>
-          <small v-if="mode?.active===node.id">
-            {{mode.status==='bad'?'FIRST VISIBLE ABNORMALITY':mode.status==='ok'?'CONFIRMED STATE':'CURRENT STEP'}}
-          </small>
-        </div>
-        <div v-if="index<scenario.nodes.length-1" class="flow-edge" aria-hidden="true">→</div>
+  <div class="experiment-intent"><strong>這一段要觀察</strong><p>{{prompt||'改一個條件，指出哪一段輸出改變，並說明下一份驗證證據。'}}</p></div>
+  <div class="experiment-controls">
+    <label v-for="c in controls" :key="c.key" :class="{'toggle-control':c.type==='toggle'}">
+      <template v-if="c.type==='toggle'"><input type="checkbox" v-model="experiment.state[c.key]">{{c.label}}</template>
+      <template v-else><span>{{c.label}}<b v-if="c.type==='range'">{{Number(experiment.state[c.key]).toFixed(c.step<1?1:0)}}</b></span>
+        <input v-if="c.type==='range'" type="range" v-model.number="experiment.state[c.key]" :min="c.min" :max="c.max" :step="c.step">
+        <select v-else v-model="experiment.state[c.key]"><option v-for="o in c.options" :key="o.value" :value="o.value">{{o.label}}</option></select>
       </template>
+    </label>
+  </div>
+  <p class="assumptions"><strong>教學假設：</strong>{{result.assumptions}}</p>
+  <div class="experiment-metrics" aria-live="polite" aria-atomic="true">
+    <div v-for="(m,i) in result.metrics" :key="m.label"><span>{{m.label}}</span><strong>{{m.value}}</strong><small v-if="baseline">基準：{{baseline.metrics[i]?.value}}</small></div>
+  </div>
+  <div class="experiment-surface">
+    <div>
+      <h2 class="surface-heading">同一個系統，現在發生什麼？</h2>
+      <p class="muted">選一個節點，核對它收到的資料、產生的結果與證據。</p>
+      <div class="experiment-nodes">
+        <button v-for="n in result.nodes" :key="n.id" type="button" :class="['experiment-node','status-'+n.status,{selected:selected.id===n.id}]" :aria-pressed="selected.id===n.id" @click="experiment.selected=n.id">
+          <strong>{{n.label}}</strong><span>{{n.output}}</span><small>{{statusText[n.status]}}</small>
+        </button>
+      </div>
+      <h3>本次關係與方向</h3>
+      <ol class="experiment-edges"><li v-for="(e,i) in result.edges" :key="i"><span>{{label(e.from)}} → {{label(e.to)}}</span><small>{{e.label}}</small></li></ol>
     </div>
-
-    <aside class="flow-investigation__evidence">
-      <div class="flow-panel">
-        <span>METRICS / STATE</span>
-        <p class="flow-panel__help">這裡是「現在量到什麼／系統現在是什麼狀態」。先看它是否和正常 flow 的預期一致，再決定要不要往下一層查。</p>
-        <p v-if="activeNode" class="flow-panel__focus"><strong>現在在查：</strong>{{activeNode.label}} 的 input / output 是否正常。</p>
-        <ul>
-          <li v-for="item in mode?.metrics||[]" :key="item">{{item}}</li>
-        </ul>
-      </div>
-      <div class="flow-panel">
-        <span>EVIDENCE</span>
-        <p class="flow-panel__help">Evidence 是用來支持或排除 hypothesis 的觀察結果。每一項只能證明它實際觀察到的範圍，不要直接把 first bad node 當成 root cause。</p>
-        <p class="flow-panel__focus"><strong>目前能支持：</strong>{{mode?.takeaway}}</p>
-        <ul>
-          <li v-for="item in mode?.evidence||[]" :key="item">{{item}}</li>
-        </ul>
-      </div>
+    <aside class="node-inspection" aria-label="選定節點證據">
+      <p class="eyebrow">正在查：{{selected.label}}</p>
+      <dl><dt>收到</dt><dd>{{selected.input}}</dd><dt>送出</dt><dd>{{selected.output}}</dd></dl>
+      <h3>這一層的證據</h3>
+      <ul v-if="selected.evidence.length"><li v-for="e in selected.evidence" :key="e">{{e}}</li></ul>
+      <p v-else>目前只有模型輸出，還沒有獨立觀察紀錄。請說明下一份需要查什麼，不能直接宣稱根因已確認。</p>
+      <template v-if="selected.evidence.length"><button type="button" class="text-button" @click="copyEvidence">複製證據文字</button><span role="status">{{copyStatus}}</span><pre class="evidence-code"><code>{{selected.evidence.join('\n')}}</code></pre></template>
     </aside>
   </div>
-
-  <div class="flow-investigation__takeaway">
-    <span>現在可以推論</span>
-    <p>{{mode?.takeaway}}</p>
-  </div>
-
-
+  <div class="experiment-tradeoff"><strong>修改後，還需要評估什麼？</strong><p>{{result.tradeoff}}</p></div>
+  <div class="experiment-toolbar"><button type="button" @click="remember">保存現在作基準</button><button type="button" @click="reset">重設目前實驗</button><span role="status">{{saved?'實驗保存在此瀏覽器':'瀏覽器無法保存；目前仍可操作，但重新載入將不保留。'}}</span></div>
+  <p class="muted small">重設只清除目前案例的設定、基準及筆記；其他章節與造訪位置保留。</p>
+  <label class="reflection"><strong>用自己的話說明</strong><span>{{prompt||'提出一個修改、說明收益與代價，以及如何驗證。'}}</span><textarea v-model="experiment.note" maxlength="8000" rows="4" placeholder="我觀察到……；目前證據能支持……；下一步要查……"></textarea></label>
+  <p class="muted small">筆記只存在目前瀏覽器，不送到伺服器，也不當作理解程度評分。</p>
 </section>
 </template>

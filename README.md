@@ -1,68 +1,61 @@
-# System Design 互動式學習地圖
+# System Design：沿著系統路徑，理解問題與設計
 
-用互動模擬學 System Design。改變需求、系統元件與參數，直接觀察資料正確性、等待時間、失敗、瓶頸與版本相容性如何跟著改變。
+一套可直接學習的 HTML 課程。從畫面看到的現象開始，追蹤請求與資料，用證據縮小問題範圍，再操作模型比較設計的機制、收益、代價與驗證。
 
-課程主體是 **System Design reasoning**；AI 可以協助整理需求、提出假設、比較方案與驗證設計。
+## 八個問題
 
-## 直接使用
+1. 一個按鈕到底發生了什麼？
+2. 問題到底壞在哪一層？
+3. 系統為什麼會變慢？
+4. 為什麼要快取？
+5. 為什麼要佇列？
+6. 資料為什麼看起來不一致？
+7. 系統出錯時怎麼知道？
+8. 找到問題以後，要怎麼改？
 
-不需要安裝 Skill，也不需要先會寫程式。
+每章有觀察操作、必要機制閱讀與另一個領域的 Transfer；最後在案件文件流程中加入五組現象，整合設計判斷。導航完全開放，沒有分數或解鎖。
 
-課程從八個問題展開：
+## 學習範圍
 
-1. 到底要做到什麼？
-2. 這件事誰負責？
-3. 兩個人同時改資料會怎樣？
-4. 誰要等到哪一步？
-5. 出錯後，我現在到底知道什麼？
-6. 我憑什麼說做到了？
-7. 到底是哪裡撐不住？
-8. 新版怎麼換上去，舊東西才不會壞？
+現在學：請求與回應、輸入／輸出與證據、等待、讀取副本、工作交接、資料版本、設計代價及重新驗證。
 
-每章都有小型 simulator。你會改 workload、元件或 policy，再觀察 system state、metrics 與 trade-off 如何改變。最後用新的案例做 Transfer，不靠背固定架構答案。
+已接觸 AI 協作的學習者不需重學工具操作；HTTP、快取、佇列與資料傳遞仍會解釋。完整交易隔離、重試／冪等工程、共識、分割、多區域、遷移與部署策略留後續課程。AI 協作、模型訓練、RAG／MCP、雲端認證及面試評分不構成本課核心。
 
-## Fork 後可以做什麼？
-
-Fork 後可以：
-
-- 換成你熟悉的案例；
-- 針對不懂的概念增加說明與實驗；
-- 調整課程順序與深度；
-- 加入自己的專案作 Transfer；
-- 搭配 [learning-map Skill](https://github.com/gcake119/learning-map)，依實際學習回饋持續重構教材。
-
-個人的 Learning Handoff、學習紀錄或 Agent 對學習狀況的判斷，建議留在 private repo／私人檔案，不要 commit 到公開 fork。
+模擬數字與資料都是合成教學假設，不代表真實產品效能；不連接真實 API。
 
 ## 本機執行
 
 需要 Node.js 22、pnpm 11.19.0。
 
 ```sh
-corepack enable
 pnpm install --frozen-lockfile
 pnpm dev
 pnpm test
 pnpm build
+pnpm exec vite preview --config vite.learning.config.mjs
 ```
 
-## 教材與設計來源
+網址使用 `/agent-system-design-learning-map/#/`。例如 `#/cache/reason` 可直接進入必要閱讀；重新載入保持可用入口及已保存的實驗。
 
-主要內容參考 ByteByteGo Big Archive — System Design 2025 Edition、*Designing Data-Intensive Applications*、System Design Primer、MIT 6.5840、CMU 15-440、AWS Well-Architected 與 Azure Architecture Center。
+實驗設定、基準、自由筆記與造訪位置只保存在目前瀏覽器；不傳到伺服器，不把造訪當學會。重設僅影響目前案例。Teaching 與 Transfer 分開保存；Final 的設計選擇跨現象保留，也能整體重開。私人 Learning Handoff 請留 private storage，不 commit 到公開課程。
 
-互動方式參考 [system-design-simulator](https://github.com/gcake119/system-design-simulator)，但本課程使用簡化、deterministic 的 synthetic teaching models；模擬數字不代表真實產品 benchmark。
+## 文件與實作
 
-完整來源角色與驗證方式見 `docs/source-strategy.md`。
+- `docs/curriculum-proposal.md`：現行 baseline、scope、八章學習問題與 review。
+- `docs/canonical/flow/`：現行 instructional source of truth。根層舊 canonical briefs 僅歷史參考。
+- `docs/source-strategy.md`：來源角色、核讀範圍與限制。
+- `docs/interaction-storyboard.md`、`docs/learning-copy.md`：互動與文案契約。
+- `docs/implementation.md`：架構與 Technical QA／Human Learning Review 狀態。
+- `learning/course.mjs`、`lesson-content.mjs`：課綱與畫面內容。
+- `learning/experiment-model.mjs`：純函式模型及有限控制項。
+- `learning/experiment-storage.mjs`：瀏覽器實驗保存與安全回退。
+- `learning/components/FlowInvestigationLab.vue`：局部證據、狀態、關係及比較介面。
+- `tests/`：可觀察的參數→狀態→後果、資料保存及路由契約。
 
-## Repo 結構
+方法依 [learning-map](https://github.com/gcake119/learning-map) main `9e62bb7`；互動參考 [system-design-simulator](https://github.com/gcake119/system-design-simulator)，不複製評分、完整元件庫或 UI。
 
-- `learning/`：課程與 simulator 實作
-- `tests/learning-map.test.mjs`：simulation 與 learning-flow tests
-- `docs/canonical/`：Canonical Content 與 Content Review
-- `docs/curriculum-proposal.md`：課綱與學習目標
-- `docs/source-strategy.md`：教材來源
-- `docs/interaction-redesign-v0.2.md`：互動設計
-- `docs/implementation.md`：Technical QA 紀錄
+Technical QA 不是教學效果證明。下一步是實際 Human Learning Review。
 
 ## License
 
-MIT License。
+MIT。

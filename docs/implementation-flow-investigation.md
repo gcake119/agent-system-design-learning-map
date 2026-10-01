@@ -1,101 +1,21 @@
-# Flow Investigation Redesign — Implementation Handoff
+# Flow Investigation — current handoff
 
-> Branch: `flow-investigation-redesign`
-> Date: 2026-09-30
-> Current gate: Implementation
-> Curriculum: CONFIRMED
-> Technical QA: NOT TESTED
-> Human Learning Review: deferred until learner starts the course
+> 2026-10-02。已完成 course refactor implementation；當前判定與證據見 `technical-qa.md`。
 
-## Locked decisions
+9/30 確認的最高學習能力與八單元順序保留。新的 learner baseline、scope contract 及逐單元檢查以 `curriculum-proposal.md` 為準。Canonical source of truth 是 `canonical/flow/`。
 
-- Highest-level capability is cross-layer flow investigation, not System Design vocabulary coverage.
-- Core reasoning primitive: find the first bad node using input / output / evidence.
-- Teaching order: flow → locate → latency → cache → queue → consistency → evidence → integrated redesign.
-- AI remains a collaborator, not course subject.
-- Canonical teaching cases are standard public cases; familiar projects are transfer cases.
-- The current live experience being too abstract / monotonous is a generalized Learning UX finding.
-- Interaction must make path, state, evidence, quantity or trade-off visibly change.
+## 已完成
 
-## Implemented in this branch
+- 內容、模型、儲存與 view 分離，替換固定 scenario 按鈕式體驗。
+- 有限 controls 改變節點輸出、實際關係方向及可比較量測。
+- 觀察 → 必要閱讀 → 換題應用；逐步開放 controls，同一 teaching state 保留。
+- Transfer 換 domain、需求與證據；Final 使用同一設計面，加入五個現象。
+- 證據位置聚焦，正常輸入／異常輸出／合法拒絕／未知結果分開。
+- 導航、重設、reload、本機筆記、儲存失敗提示與 reduced motion。
+- tests 驗證教學因果與儲存隔離；production build 與 Chromium 檢查。
 
-### Curriculum navigation
-`learning/course.mjs` now exposes the eight redesigned units:
+## Human Learning Review
 
-1. 一個按鈕到底發生了什麼
-2. 問題到底壞在哪一層
-3. 系統為什麼會變慢
-4. 為什麼要 Cache
-5. 為什麼要 Queue
-6. 資料為什麼看起來不一致
-7. 系統出錯時怎麼知道
-8. 找到問題以後，要怎麼改系統
+不可用點擊或造訪判定理解。逐章要求 learner 畫出正常路徑、指出第一個異常輸出、說明需要哪份證據與證據不能證明什麼。再檢查能否解釋設計收益／代價，以及換 domain 後能否自己推理。
 
-Each unit uses observe → reason → transfer stages.
-
-### Persistent system surface
-Added:
-- `learning/components/FlowInvestigationLab.vue`
-- `learning/flow-scenarios.mjs`
-
-The learning surface now provides:
-- persistent architecture nodes
-- scenario / failure switching
-- active / abnormal node indication
-- focused metrics / state
-- evidence
-- consequence / takeaway
-- the shared 11-question investigation framework
-
-### Implemented scenario families
-- request flow
-- first bad node
-- latency bottleneck
-- cache hit / miss / stale
-- queue sync / async / backlog / worker failure
-- stale data / replica lag / projection lag
-- logs / metrics / traces / business state
-- integrated DB / provider / queue / stale-read incidents
-
-### Reflection behavior
-The redesigned units no longer depend on multiple-choice answers. Learners operate the system surface first, then answer the stage prompt in their own words.
-
-## Important limitations before merge
-
-This branch has NOT yet received runtime verification.
-
-Required before replacing production:
-- pnpm test
-- pnpm build
-- browser QA
-- direct routes / reload
-- desktop / narrow desktop / mobile
-- keyboard / focus
-- reduced motion
-- no horizontal overflow
-- transfer flow
-- final integrated transfer
-
-Existing tests were written for the previous curriculum and may need to be rewritten around the new instructional relationships rather than old unit IDs / copy.
-
-## Required next implementation work
-
-1. Rewrite automated tests for new parameter → consequence relationships.
-2. Align FinalIntegratedSimulator / final-transfer content with the new 11-question investigation framework.
-3. Review old simulator components and remove / retain only what is still used.
-4. Review terminology density and progressive disclosure.
-5. Perform Technical QA.
-6. Only after Technical QA, decide whether this branch replaces the current GitHub Pages version.
-7. Human Learning Review begins when the learner actually starts studying.
-
-## Human Learning Review focus
-
-When learning begins, record:
-- whether the learner can redraw the flow without the animation
-- whether they choose evidence based on a hypothesis
-- whether first bad node is confused with root cause
-- whether System Design trade-off reasoning still emerges after debugging
-- whether evidence panels are too dense
-- whether transfer cases work without pattern labels
-
-Do not infer learning success from completion rate or clicks.
+重點觀察：節點與有方向的關係清單能否建立 mental model；必要閱讀長度是否適合；Final 的中性現象是否仍暗示答案；合成數字是否被誤當真實效能。真人回饋與專案私密資訊保留私人 Learning Handoff，只將去識別化的課程 finding 回寫公開 repo。

@@ -1,3 +1,4 @@
+const defaultStorage=()=>{try{return globalThis.localStorage;}catch{return null;}};
 const STORAGE_KEY='system-design-learning-progress-v1';
 
 export function emptyProgress(){
@@ -13,7 +14,7 @@ export function normalizeProgress(value){
   };
 }
 
-export function loadProgress(storage=globalThis?.localStorage){
+export function loadProgress(storage=defaultStorage()){
   try{
     if(!storage)return emptyProgress();
     return normalizeProgress(JSON.parse(storage.getItem(STORAGE_KEY)||'null'));
@@ -32,7 +33,7 @@ export function recordStage(progress,unitId,stageId){
   };
 }
 
-export function saveProgress(progress,storage=globalThis?.localStorage){
+export function saveProgress(progress,storage=defaultStorage()){
   try{
     if(storage)storage.setItem(STORAGE_KEY,JSON.stringify(normalizeProgress(progress)));
   }catch{}

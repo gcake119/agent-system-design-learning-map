@@ -1,128 +1,36 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-
 import {units,unitById,stageById} from '../learning/course.mjs';
+import {lessonContent} from '../learning/lesson-content.mjs';
 import {parseRoute,courseRoute} from '../learning/interaction.mjs';
-import {flowScenarios,flowScenarioFor} from '../learning/flow-scenarios.mjs';
-import {simulateConcurrency} from '../learning/sim/models/concurrency.mjs';
-import {simulateQueue} from '../learning/sim/models/queue.mjs';
-import {simulateFailure} from '../learning/sim/models/failure.mjs';
-import {simulateCapacity} from '../learning/sim/models/capacity.mjs';
-import {finalIncidents,finalDefaults,simulateFinal} from '../learning/sim/final-integrated.mjs';
+import {finalTransfer} from '../learning/final-transfer.mjs';
+import {experimentDefaults,simulateExperiment} from '../learning/experiment-model.mjs';
 import {emptyProgress,recordStage,visitedStages} from '../learning/progress.mjs';
-
-const ids=['flow','locate','latency','cache','queue','consistency','evidence','redesign'];
-
-test('course exposes the confirmed eight-unit flow investigation curriculum',()=>{
-  assert.equal(units.length,8);
-  assert.deepEqual(units.map(u=>u.id),ids);
-  assert.deepEqual(units.map(u=>u.number),[1,2,3,4,5,6,7,8]);
+test('已確認的八章依先備順序提供必要閱讀及無選項答案的 Transfer',()=>{
+ assert.deepEqual(units.map(u=>u.id),['flow','locate','latency','cache','queue','consistency','evidence','redesign']);
+ for(const u of units){
+  assert.deepEqual(u.stages.map(s=>[s.id,s.mode]),[['observe','INTERACT'],['reason','READ'],['transfer','TRANSFER']]);
+  const c=lessonContent[u.id];assert.ok(c.reading.length>=2);assert.ok(c.prerequisite);assert.ok(c.boundaries.length);assert.ok(c.sources.length);
+  assert.ok(u.stages.every(s=>s.options.length===0));
+ }
 });
-
-test('every unit has observe reason and transfer stages',()=>{
-  for(const unit of units) assert.deepEqual(unit.stages.map(s=>s.id),['observe','reason','transfer']);
+test('所有現行小節、Final 與錯誤書籤均有明確路由結果',()=>{
+ assert.deepEqual(parseRoute('#/'),{view:'map'});
+ for(const u of units)for(const s of u.stages)assert.deepEqual(parseRoute(courseRoute(u.id,s.id)),{view:'unit',unit:u.id,stage:s.id});
+ for(const i of finalTransfer.incidents)assert.deepEqual(parseRoute(courseRoute('final',i.id)),{view:'final',incident:i.id});
+ assert.deepEqual(parseRoute('#/missing'),{view:'notfound'});
+ assert.deepEqual(parseRoute('#/flow/missing'),{view:'notfound'});
+ assert.equal(stageById(unitById('flow'),'missing').id,'observe');
 });
-
-test('course routes resolve redesigned ids',()=>{
-  assert.deepEqual(parseRoute('#/'),{view:'map'});
-  assert.deepEqual(parseRoute(courseRoute('locate','observe')),{view:'unit',unit:'locate',stage:'observe'});
-  assert.deepEqual(parseRoute('#/missing'),{view:'notfound'});
+test('每個現行模型的關係都指向存在的節點，結果均有限',()=>{
+ for(const u of units)for(const context of ['teaching','transfer']){
+  const r=simulateExperiment(u.id,experimentDefaults(u.id,context),context);
+  for(const e of r.edges){assert.ok(r.nodes.some(n=>n.id===e.from),u.id+' from '+e.from);assert.ok(r.nodes.some(n=>n.id===e.to),u.id+' to '+e.to);}
+  for(const v of Object.values(r.values))if(typeof v==='number')assert.ok(Number.isFinite(v),u.id);
+ }
 });
-
-test('unknown stage falls back deterministically inside helpers',()=>{
-  assert.equal(stageById(unitById('flow'),'missing').id,'observe');
-});
-
-test('every redesigned unit has a persistent flow scenario',()=>{
-  for(const id of ids){
-    const scenario=flowScenarioFor(id);
-    assert.ok(scenario,'missing scenario '+id);
-    assert.ok(scenario.nodes.length>=4);
-    assert.ok(scenario.modes.length>=4);
-  }
-});
-
-test('every scenario mode makes state and evidence visible',()=>{
-  for(const scenario of Object.values(flowScenarios)){
-    for(const mode of scenario.modes){
-      assert.ok(scenario.nodes.some(node=>node.id===mode.active),scenario.id+'/'+mode.id+' active node missing');
-      assert.ok(['bad','ok','running'].includes(mode.status));
-      assert.ok(mode.metrics.length>=2);
-      assert.ok(mode.evidence.length>=2);
-      assert.ok(mode.takeaway.length>12);
-    }
-  }
-});
-
-test('first-bad-node scenarios distinguish layers',()=>{
-  const locate=flowScenarioFor('locate');
-  assert.deepEqual(locate.modes.map(m=>m.active),['frontend','api','backend','db','frontend']);
-  assert.ok(locate.modes.some(m=>m.metrics.some(x=>/HTTP 500/.test(x))));
-  assert.ok(locate.modes.some(m=>m.evidence.some(x=>/render/.test(x))));
-});
-
-test('latency scenario exposes distinct bottleneck locations',()=>{
-  const latency=flowScenarioFor('latency');
-  assert.ok(latency.modes.some(m=>m.active==='db'&&m.status==='bad'));
-  assert.ok(latency.modes.some(m=>m.active==='network'&&m.status==='bad'));
-  assert.ok(latency.modes.some(m=>m.active==='external'&&m.status==='bad'));
-});
-
-test('cache scenario exposes hit miss and stale states',()=>{
-  const cache=flowScenarioFor('cache');
-  assert.deepEqual(cache.modes.map(m=>m.id),['off','hit','miss','stale']);
-  assert.match(cache.modes.find(m=>m.id==='stale').metrics.join(' '),/DB v3/);
-});
-
-test('queue scenario separates acceptance from completion',()=>{
-  const queue=flowScenarioFor('queue');
-  assert.match(queue.modes.find(m=>m.id==='async').metrics.join(' '),/accepted/);
-  assert.match(queue.modes.find(m=>m.id==='backlog').metrics.join(' '),/Queue age/);
-});
-
-test('consistency scenario shows multiple versions',()=>{
-  const consistency=flowScenarioFor('consistency');
-  assert.match(consistency.modes.find(m=>m.id==='cachelag').metrics.join(' '),/Primary v3/);
-  assert.match(consistency.modes.find(m=>m.id==='replicalag').metrics.join(' '),/Replica v2/);
-});
-
-test('evidence scenario keeps evidence surfaces distinct',()=>{
-  const evidence=flowScenarioFor('evidence');
-  assert.deepEqual(evidence.modes.map(m=>m.id),['logs','metrics','trace','business']);
-});
-
-test('legacy causal models still preserve core teaching relationships',()=>{
-  const unsafe=simulateConcurrency({capacity:1,writers:2,mechanism:'none'});
-  const safe=simulateConcurrency({capacity:1,writers:2,mechanism:'constraint'});
-  assert.equal(unsafe.ruleHeld,false);
-  assert.equal(safe.ruleHeld,true);
-
-  const sync=simulateQueue({arrivalRate:800,workerRate:400,workers:1,async:false});
-  const asyncRun=simulateQueue({arrivalRate:800,workerRate:400,workers:1,async:true});
-  assert.ok(asyncRun.requestLatency<sync.requestLatency);
-
-  const base=simulateFailure({operations:1000,timeoutRate:.1,retries:0});
-  const retry=simulateFailure({operations:1000,timeoutRate:.1,retries:3,idempotency:false});
-  assert.ok(retry.providerLoad>base.providerLoad);
-
-  const uncached=simulateCapacity({preset:'url',requestsPerSec:20000,cache:false});
-  const cached=simulateCapacity({preset:'url',requestsPerSec:20000,cache:true,cacheHit:.85});
-  assert.ok(cached.nodes.find(n=>n.id==='db').incoming<uncached.nodes.find(n=>n.id==='db').incoming);
-});
-
-test('final integrated transfer still exposes mixed incidents',()=>{
-  assert.equal(finalIncidents.length,5);
-  const overloaded=simulateFinal('backlog',finalDefaults.backlog);
-  const scaled=simulateFinal('backlog',{...finalDefaults.backlog,workers:4});
-  assert.ok(overloaded.queueDepth>scaled.queueDepth);
-});
-
-
-test('learning progress records visited stages without treating them as mastery',()=>{
-  let progress=emptyProgress();
-  progress=recordStage(progress,'flow','observe');
-  progress=recordStage(progress,'flow','reason');
-  progress=recordStage(progress,'flow','reason');
-  assert.deepEqual(visitedStages(progress,'flow'),['observe','reason']);
-  assert.deepEqual(progress.last,{unitId:'flow',stageId:'reason'});
+test('瀏覽進度是造訪紀錄，包含 Final 續讀但不轉成學習評分',()=>{
+ let p=emptyProgress();p=recordStage(p,'flow','observe');p=recordStage(p,'flow','reason');p=recordStage(p,'flow','reason');
+ assert.deepEqual(visitedStages(p,'flow'),['observe','reason']);
+ p=recordStage(p,'final','unknown');assert.deepEqual(p.last,{unitId:'final',stageId:'unknown'});assert.equal(p.score,undefined);
 });
