@@ -1,6 +1,6 @@
 # Learning Map 重製：教材來源架構
 
-> 狀態：三層來源架構已確認（2026-09-25）；課綱提案另待確認。
+> 現行狀態：2026-10-01 流程調查重構沿用已確認來源邊界。現行課綱見 `curriculum-proposal.md`；instructional source of truth 見 `canonical/flow/`。下方保留來源角色及歷史核讀紀錄。
 >
 > 本文件記錄重新製作 Agent System Design Learning Map 時的教材來源角色與使用邊界。課程主題是 **System Design**；AI Agent 是學習者在系統設計過程中的協作者，不是課程主體。
 
@@ -10,7 +10,7 @@
 
 來源分成三層。不同來源可以同時具有內容來源與 presentation reference 角色，但不能因為某來源涵蓋某主題，就自動把該主題加入核心課綱。所有內容都必須支撐確認後的 System Design 學習目標。
 
-**來源被採用不代表全文已精讀或主張已全部驗證。** 實際核讀範圍、版本、章節与不足處須另行記錄；課綱確認也不等於 Canonical Content 通過 Content Review。
+**來源被採用不代表全文已精讀或主張已全部驗證。** 實際核讀範圍、版本、章節與不足處須另行記錄；課綱確認也不等於 Canonical Content 通過 Content Review。
 
 ## 第一層：System Design 主體
 
@@ -239,7 +239,7 @@ Canonical Content 應記錄來源名稱、實際版本／commit／學期、章�
 11. Technical QA
 12. Human learning review
 
-目前進度（2026-09-26）：
+歷史進度（2026-09-26；不代表本輪 QA）：
 
 - Curriculum Confirmation Gate：PASS。
 - Unit 1–8 Canonical Content：完成。
@@ -251,3 +251,17 @@ Canonical Content 應記錄來源名稱、實際版本／commit／學期、章�
 - 下一 gate：Technical QA → Human Learning Review。
 
 來源角色與內容正確性 gate 不因 implementation 進度而改變。
+
+## Course refactor review：本輪來源核讀（2026-10-01）
+
+- learning-map main `9e62bb771573f27360e869d8ab2f5db7dedd267d`：跨教材方法 source of truth；非 System Design 主張來源。
+- system-design-simulator main `a212e3713520a58d93c392d236d1895d25b61550`：實際閱讀 README、SimulationControls、MetricsDisplay；僅參考有限參數、state、node consequences 與 evidence 的連動，不採 interview scoring、palette 或 benchmark。
+- [MDN HTTP Overview](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview)：Components of HTTP-based systems、HTTP flow；官方機制文件窄範圍補充，支持請求／回應 bridge，未擴充網路協定課。
+- [Azure Queue-Based Load Leveling](https://learn.microsoft.com/en-us/azure/architecture/patterns/queue-based-load-leveling)：Solution、Problems and considerations；本輪核讀等待交接與處理能力邊界。
+- [Azure Retry](https://learn.microsoft.com/en-us/azure/architecture/patterns/retry)：Context and problem、Solution、Idempotency；本輪核讀逾時與重送的必要背景；完整 retry 工程不納入核心。
+- [Google SRE Monitoring Distributed Systems](https://sre.google/sre-book/monitoring-distributed-systems/)：Symptoms Versus Causes、Four Golden Signals；本輪核讀症狀／原因與觀察範圍，未把特定 production 數字搬入模型。
+- [Azure Cache-Aside](https://learn.microsoft.com/en-us/azure/architecture/patterns/cache-aside)：兩次 live fetch 503；本輪沿用 2026-09-25 canonical Content Review 的副本／來源、時效及失效核讀紀錄。明確記錄未重新取回，未新增其未核實的進階主張。
+
+來源不是全書精讀證據。所有 case、數字與公式是自撰合成教學假設；不是來源 benchmark。DDIA、MIT、ByteByteGo 等未在本輪重新全文核讀，不以品牌或目錄補足證據。各章 source mapping 指到實際支撐的內容，不發布第三方原檔。
+
+現行 core 不再包含部署／遷移 taxonomy、完整 transaction isolation、CAP／共識／分割演算法、RAG／MCP。舊 briefs 保留作歷史，不偷偷當 deep dive。

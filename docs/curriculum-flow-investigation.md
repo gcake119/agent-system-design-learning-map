@@ -4,6 +4,8 @@
 > 狀態：**CONFIRMED — 進入 Canonical Content / Interaction / Implementation**
 > 使用者已確認可依本文件實作；Human Learning Review 留到實際開始學習後進行。
 
+> 2026-10-02 更新：本文件保留 9/30 確認的 outcome 與順序。實際 v0.4 baseline／scope／單元內容以 `curriculum-proposal.md` 為準；下列進階名詞清單不是本次 Learn now 的授權範圍。
+
 ## 1. Highest-level capability
 
 面對 Web / SaaS 系統中的真實問題，學習者能從使用者可見現象開始，建立 request flow / data flow，沿各層 input / output 與 evidence 找到第一個開始不正常的節點，區分 symptom / direct cause / root cause，理解原設計 trade-off，提出可驗證修改，並以 tests / logs / metrics / traces / browser tools / business state 驗證結果。
