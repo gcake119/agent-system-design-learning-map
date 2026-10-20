@@ -25,7 +25,7 @@
 
 ## 本機執行
 
-需要 Node.js 22、pnpm 11.19.0。
+本地開發與 CI 使用 Node.js 24、pnpm 11.19.0。
 
 ```sh
 pnpm install --frozen-lockfile
