@@ -1,44 +1,97 @@
 name: Deploy Slidev to GitHub Pages
-
 on:
   push:
     branches: [main]
   workflow_dispatch:
-
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
 concurrency:
   group: pages
   cancel-in-progress: true
-
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.repository == 'gcake119/agent-system-design-learning-map' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && fromJSON('["self-hosted","Linux","X64","repo-agent-system-design-learning-map"]') || 'ubuntu-24.04' }}
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash scripts/ci/run-step.sh {0}
+    outputs:
+      source_sha: ${{ steps.evidence.outputs.sha }}
+      artifact_id: ${{ steps.pages.outputs.artifact_id }}
+      artifact_name: github-pages
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Verify Mint identity and shared controls
+        env:
+          CI_RESOURCE_CLASS: light
+        run: bash scripts/ci/prepare-mint.sh
       - uses: pnpm/action-setup@v4
+        with:
+          dest: ${{ runner.temp }}/agentmap-pnpm-${{ github.run_id }}-${{ github.run_attempt }}
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test
+      - run: pnpm test | tee ci-tests.log
       - run: pnpm build
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - name: Record exact tests and build manifest
+        id: evidence
+        env:
+          CI_RESOURCE_CLASS: light
+        run: python3 scripts/ci/record-verification.py
+      - uses: actions/upload-artifact@v4
         with:
+          name: ci-verification-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ci-verification.json
+            ci-tests.log
+          if-no-files-found: error
+      - uses: actions/upload-pages-artifact@v3
+        id: pages
+        with:
+          name: github-pages
           path: dist
-
   deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: build
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     steps:
+      - name: Require exact verified build identity
+        env:
+          SOURCE_SHA: ${{ needs.build.outputs.source_sha }}
+          ARTIFACT_ID: ${{ needs.build.outputs.artifact_id }}
+        run: |
+          test "$SOURCE_SHA" = "$GITHUB_SHA"
+          [[ "$ARTIFACT_ID" =~ ^[0-9]+$ ]]
+      - uses: actions/configure-pages@v5
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: ${{ needs.build.outputs.artifact_name }}
+      - name: Record actual Pages publication
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+          ARTIFACT_NAME: ${{ needs.build.outputs.artifact_name }}
+          ARTIFACT_ID: ${{ needs.build.outputs.artifact_id }}
+        run: |
+          jq -n --arg sha "$GITHUB_SHA" --arg pageUrl "$PAGE_URL" \
+            --arg artifactId "$ARTIFACT_ID" --arg artifactName "$ARTIFACT_NAME" --arg runId "$GITHUB_RUN_ID" \
+            '{sourceSha:$sha,pageUrl:$pageUrl,artifactId:$artifactId,artifactName:$artifactName,workflowRun:$runId,pagesPublication:"passed",humanLearningReview:"not-run"}' \
+            > pages-publication.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pages-publication-${{ github.sha }}-${{ github.run_attempt }}
+          path: pages-publication.json
+          if-no-files-found: error
