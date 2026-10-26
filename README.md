@@ -59,3 +59,7 @@ Technical QA 不是教學效果證明。下一步是實際 Human Learning Review
 ## License
 
 MIT。
+
+## Mint CI
+
+可信同repo Linux build/test 使用專屬Mint runner，fork PR留hosted；Pages deploy維持hosted與原main environment限制。原15個測試、Node24/pnpm11.19 frozen lock、build與404 fallback保留，Technical QA不是Human Learning Review。設定與初始驗證見[遷移紀錄](docs/mint-runner-migration.md)，最終平台收尾另記中央紀錄。
