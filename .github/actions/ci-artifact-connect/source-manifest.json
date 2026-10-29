@@ -1,0 +1,11 @@
+{
+  "format": 1,
+  "upstream_repository": "gcake119/home-infrastructure",
+  "upstream_revision": "11f4e813135b841e27f5255984760a0089ae661e",
+  "files": {
+    "action.yml": "de70c6b202676412ff910f3ece0ee46dffd8c6b3ef9046ea2ed75d10ba476f72"
+  },
+  "upstream_paths": {
+    "action.yml": "scripts/ci-artifacts/connect-action.yml"
+  }
+}

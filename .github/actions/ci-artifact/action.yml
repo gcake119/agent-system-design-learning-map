@@ -1,0 +1,75 @@
+name: Verified private CI artifact upload
+description: Version-pinned stdlib transport; product checks and publication remain with the owning workflow.
+inputs:
+  endpoint:
+    description: Private artifact HTTPS endpoint from the owning repository variable.
+    required: true
+  profile:
+    description: Exact policy-approved artifact profile.
+    required: true
+  path:
+    description: Existing newline-separated artifact paths.
+    required: true
+  if-no-files-found:
+    description: Preserve the owning workflow's missing-file contract.
+    default: error
+  include-hidden-files:
+    description: Explicit opt-in for hidden source files.
+    default: 'false'
+  max-bytes:
+    description: Maximum archive bytes, never greater than the service ceiling.
+    default: '1073741824'
+  receipt:
+    description: Optional existing receipt path inside the ZIP.
+    default: ''
+  receipt-format:
+    description: bytes or canonical-json, according to the owning receipt contract.
+    default: bytes
+  outcome:
+    description: pass, fail, candidate or unknown; storage never infers qualification.
+    default: candidate
+  evidence-class:
+    description: diagnostic, candidate, main-qualification or integrated-main.
+    default: diagnostic
+outputs:
+  artifact:
+    description: Exact immutable identity and both content hashes; no credentials.
+    value: ${{ steps.upload.outputs.artifact }}
+  key:
+    description: Exact service object key.
+    value: ${{ steps.upload.outputs.key }}
+runs:
+  using: composite
+  steps:
+    - name: Reject untrusted PR transport before requesting identity
+      shell: bash
+      env:
+        ARTIFACT_ACTION_PATH: ${{ github.action_path }}
+      run: |
+        set -euo pipefail
+        py=python3
+        if [[ "$RUNNER_OS" == Windows ]]; then py=python; fi
+        "$py" -I -c 'import importlib.util,os,pathlib; p=pathlib.Path(os.environ["ARTIFACT_ACTION_PATH"])/"artifact.py"; s=importlib.util.spec_from_file_location("guard",p); m=importlib.util.module_from_spec(s); s.loader.exec_module(m); m.trusted_workflow(os.environ) or (_ for _ in ()).throw(SystemExit("UNTRUSTED_PR_USE_GITHUB_DIAGNOSTIC_EXCEPTION"))'
+    - name: Publish verified immutable bytes
+      id: upload
+      shell: bash
+      env:
+        ARTIFACT_ACTION_PATH: ${{ github.action_path }}
+        CI_ARTIFACT_ENDPOINT: ${{ inputs.endpoint }}
+        ARTIFACT_PROFILE: ${{ inputs.profile }}
+        ARTIFACT_PATHS: ${{ inputs.path }}
+        ARTIFACT_MISSING: ${{ inputs.if-no-files-found }}
+        ARTIFACT_HIDDEN: ${{ inputs.include-hidden-files }}
+        ARTIFACT_LIMIT: ${{ inputs.max-bytes }}
+        ARTIFACT_RECEIPT: ${{ inputs.receipt }}
+        ARTIFACT_RECEIPT_FORMAT: ${{ inputs.receipt-format }}
+        ARTIFACT_OUTCOME: ${{ inputs.outcome }}
+        ARTIFACT_CLASS: ${{ inputs.evidence-class }}
+      run: |
+        set -euo pipefail
+        py=python3
+        if [[ "$RUNNER_OS" == Windows ]]; then py=python; fi
+        args=(upload --profile "$ARTIFACT_PROFILE" --paths "$ARTIFACT_PATHS" --if-no-files-found "$ARTIFACT_MISSING" --max-bytes "$ARTIFACT_LIMIT" --receipt-format "$ARTIFACT_RECEIPT_FORMAT" --outcome "$ARTIFACT_OUTCOME" --evidence-class "$ARTIFACT_CLASS")
+        if [[ -n "$ARTIFACT_RECEIPT" ]]; then args+=(--receipt "$ARTIFACT_RECEIPT"); fi
+        case "$ARTIFACT_HIDDEN" in true) args+=(--include-hidden);; false) :;; *) exit 2;; esac
+        "$py" -I "$ARTIFACT_ACTION_PATH/artifact.py" "${args[@]}"

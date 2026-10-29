@@ -6,6 +6,9 @@ permissions:
   contents: read
 jobs:
   qa:
+    permissions:
+      contents: read
+      id-token: write
     runs-on: ${{ github.repository == 'gcake119/agent-system-design-learning-map' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && fromJSON('["self-hosted","Linux","X64","repo-agent-system-design-learning-map"]') || 'ubuntu-24.04' }}
     timeout-minutes: 60
     defaults:
@@ -35,10 +38,25 @@ jobs:
         env:
           CI_RESOURCE_CLASS: light
         run: python3 scripts/ci/record-verification.py
-      - uses: actions/upload-artifact@v4
+      - name: Preserve untrusted PR diagnostic exception
+        if: ${{ (success()) && !(github.actor != 'dependabot[bot]' && github.event.pull_request.user.login != 'dependabot[bot]' && ((github.event_name != 'pull_request' && github.event_name != 'pull_request_target') || github.event.pull_request.head.repo.full_name == github.repository)) }}
+        uses: actions/upload-artifact@v4
         with:
           name: ci-verification-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             ci-verification.json
             ci-tests.log
+          if-no-files-found: error
+      - name: Store trusted ci-verification
+        if: ${{ (success()) && (github.actor != 'dependabot[bot]' && github.event.pull_request.user.login != 'dependabot[bot]' && ((github.event_name != 'pull_request' && github.event_name != 'pull_request_target') || github.event.pull_request.head.repo.full_name == github.repository)) }}
+        uses: ./.github/actions/ci-artifact
+        with:
+          endpoint: ${{ secrets.CI_ARTIFACT_ENDPOINT }}
+          profile: ci-verification
+          path: |
+            ci-verification.json
+            ci-tests.log
+          receipt: ci-verification.json
+          outcome: ${{ job.status == 'success' && 'pass' || job.status == 'failure' && 'fail' || 'unknown' }}
+          evidence-class: diagnostic
           if-no-files-found: error

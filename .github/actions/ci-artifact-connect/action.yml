@@ -1,0 +1,36 @@
+name: Approved private artifact connection
+description: Once per hosted Linux or Windows job; existing macOS transport keeps its scoped DNS wrapper.
+inputs:
+  endpoint:
+    description: Private service endpoint.
+    required: true
+  client-id:
+    description: Approved Tailscale workload identity, not a secret.
+    required: true
+  audience:
+    description: Audience of that approved workload identity.
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Check trusted hosted context before requesting network identity
+      shell: bash
+      env:
+        ARTIFACT_CONNECTION_PATH: ${{ github.action_path }}
+      run: |
+        set -euo pipefail
+        [[ "$RUNNER_ENVIRONMENT" == github-hosted ]]
+        case "$RUNNER_OS" in Linux) py=python3;; Windows) py=python;; *) echo 'Unsupported hosted context: use the existing reviewed native wrapper'; exit 2;; esac
+        "$py" -I -c 'import importlib.util,os,pathlib; p=pathlib.Path(os.environ["ARTIFACT_CONNECTION_PATH"])/"../ci-artifact/artifact.py"; s=importlib.util.spec_from_file_location("guard",p); m=importlib.util.module_from_spec(s); s.loader.exec_module(m); m.trusted_workflow(os.environ) or (_ for _ in ()).throw(SystemExit("UNTRUSTED_PR_USE_GITHUB_DIAGNOSTIC_EXCEPTION"))'
+    - name: Join the approved private transport identity
+      uses: tailscale/github-action@99a8333667fff04fdd6cffb46dfd409f8329a7bf
+      with:
+        oauth-client-id: ${{ inputs.client-id }}
+        audience: ${{ inputs.audience }}
+        tags: tag:ci-artifacts-client
+        hostname: ci-artifact-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}
+        version: 1.104.2
+        timeout: 60s
+        retry: '1'
+        use-cache: 'false'
+        log-mode: quiet
