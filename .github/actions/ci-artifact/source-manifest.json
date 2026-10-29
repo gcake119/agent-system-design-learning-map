@@ -1,11 +1,11 @@
 {
   "format": 1,
   "upstream_repository": "gcake119/home-infrastructure",
-  "upstream_revision": "11f4e813135b841e27f5255984760a0089ae661e",
-  "version_sha256": "7821d3e1e98303948fa5086a9b0756385f2248638c160eca878229e72e58f2b6",
+  "upstream_revision": "bf35cc14013797ac454e76c3746ad2868a596d4c",
+  "version_sha256": "419f02af13981857cf1ea4bf6cc1a70ab1e27d31ea0975685113ab8b95e78b90",
   "files": {
     "client.py": "d3b3f36e409f479d8526fc7b52bb07e0abb8183e09f83ce7fce1a5a47e85f177",
-    "bundle.py": "5de7637454bbb839a63bcf5108c066ae24a25e15ef53c92565ef500e18e67f8f",
+    "bundle.py": "dadf230aeca6d63fe059aded02f834a75c8d1572c734e695f136533d1d90a204",
     "artifact.py": "29c1ece99340216e8602dde94bf94bfa4d4e740f629c7eac16be18e77b45bc00",
     "action.yml": "5d7b18b24c27b92d0c975680be7c5e6f66b88e487b894864ab7e2066e1d9c230"
   },

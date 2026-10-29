@@ -106,7 +106,7 @@ def _source_paths(patterns, roots, include_hidden):
             prefix /= component
         base = prefix if prefix.is_dir() else prefix.parent
         bases.append(base)
-        for match in glob.iglob(str(pattern), recursive=True):
+        for match in glob.iglob(str(pattern), recursive=True, include_hidden=include_hidden):
             path = Path(match)
             candidates = [path]
             if path.is_dir() and not path.is_symlink():
