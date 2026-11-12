@@ -67,3 +67,7 @@ MIT。
 ## Pages 發布暫停開關
 
 Pages 部署另須 repository variable `ENABLE_PAGES_PUBLICATION` 明確為 `true`，原本部署條件與 build 依賴仍保留。此次 CI 遷移將此開關設為 `false`；不自行恢復。未設定或非 `true` 時仍執行原有 build／驗證，但不部署。Linux build／test 使用自架 runner，Pages 部署維持 GitHub-hosted 例外。可用 `node --test scripts/check-publication-hold.test.mjs` 核對發布條件，不會執行部署。
+
+## Heavy 排隊預算
+
+Heavy steps 共用每個 GitHub job 四小時累計等待預算；原驗證時間另加十分鐘清理餘裕。Light 控制與 cleanup 維持原900秒等待，不消耗heavy預算。單一heavy名額與主機資源配額不變，耗盡仍明確失敗，不恢復hosted fallback。可用 `python3 -B scripts/ci/test_wait_budget.py` 在私人fake admission recorder驗證，不取得主機共用鎖。

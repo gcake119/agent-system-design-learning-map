@@ -14,7 +14,7 @@ jobs:
       contents: read
       id-token: write
     runs-on: ["self-hosted", "Linux", "X64", "repo-agent-system-design-learning-map"]
-    timeout-minutes: 60
+    timeout-minutes: 310
     defaults:
       run:
         shell: bash scripts/ci/run-step.sh {0}
