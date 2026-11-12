@@ -62,4 +62,8 @@ MIT。
 
 ## Mint CI
 
-可信同repo Linux build/test 使用專屬Mint runner，fork PR留hosted；Pages deploy維持hosted與原main environment限制。原15個測試、Node24/pnpm11.19 frozen lock、build與404 fallback保留，Technical QA不是Human Learning Review。設定與初始驗證見[遷移紀錄](docs/mint-runner-migration.md)，最終平台收尾另記中央紀錄。
+可信同repo Linux build/test 使用專屬Mint runner，未符合原可信來源條件的PR在checkout前拒絕，不使用hosted fallback；Pages deploy維持hosted與原main environment限制。原15個測試、Node24/pnpm11.19 frozen lock、build與404 fallback保留，Technical QA不是Human Learning Review。設定與初始驗證見[遷移紀錄](docs/mint-runner-migration.md)，最終平台收尾另記中央紀錄。
+
+## Pages 發布暫停開關
+
+Pages 部署另須 repository variable `ENABLE_PAGES_PUBLICATION` 明確為 `true`，原本部署條件與 build 依賴仍保留。此次 CI 遷移將此開關設為 `false`；不自行恢復。未設定或非 `true` 時仍執行原有 build／驗證，但不部署。Linux build／test 使用自架 runner，Pages 部署維持 GitHub-hosted 例外。可用 `node --test scripts/check-publication-hold.test.mjs` 核對發布條件，不會執行部署。

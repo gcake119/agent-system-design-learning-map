@@ -93,6 +93,7 @@ jobs:
           name: github-pages
           path: dist
   deploy:
+    if: ${{ vars.ENABLE_PAGES_PUBLICATION == 'true' }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
